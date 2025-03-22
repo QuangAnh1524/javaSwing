@@ -7,7 +7,7 @@ public class Schedule {
     private int tutorId;
     private Date lessonDate;
     private Date endDate;
-    private String status;
+    private String status; //"empty" hoac "booked"
     private int studentId;
 
     public Schedule() {
