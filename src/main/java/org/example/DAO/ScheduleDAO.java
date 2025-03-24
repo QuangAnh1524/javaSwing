@@ -64,7 +64,7 @@ public class ScheduleDAO {
 
     //cập nhật lihcj khi gia sư chọn
     public boolean bookSchedule(int scheduleId, int tutorId) {
-        String query = "update schedule from schedule set tutor_id = ? and status = 'booked' where schedule_id = ? and status = 'empty'";
+        String query = "update schedule set tutor_id = ?, status = 'booked' where schedule_id = ? and status = 'empty'";
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, tutorId);
@@ -80,7 +80,7 @@ public class ScheduleDAO {
 
     //hủy lịch
     public boolean cancelSchedule(int scheduleId, int tutorId) {
-        String query = "update schedule set tutor_id = NULL and status = 'empty' where schedule_id = ? and tutor_id = ?";
+        String query = "update schedule set tutor_id = NULL, status = 'empty' where schedule_id = ? and tutor_id = ?";
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, scheduleId);

@@ -1,10 +1,18 @@
 package org.example.swingUI.login;
 
+import org.example.swingUI.controller.LoginController;
+import org.example.swingUI.listener.LoginListener;
 import javax.swing.*;
 import java.awt.*;
 
 public class LoginForm extends JFrame {
-    public LoginForm() {
+    private JTextField userNameField;
+    private JPasswordField passField;
+    private LoginListener loginListener;
+
+    public LoginForm(LoginListener loginListener) {
+        this.loginListener = loginListener;
+
         setTitle("Login Form");
         setSize(800, 450);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -58,7 +66,7 @@ public class LoginForm extends JFrame {
         rightPanel.add(userIconLabel);
 
         // UsernameField
-        JTextField userNameField = new JTextField();
+        userNameField = new JTextField();
         userNameField.setBounds(80, 145, 270, 30);
         rightPanel.add(userNameField);
 
@@ -76,7 +84,7 @@ public class LoginForm extends JFrame {
         rightPanel.add(passIconLabel);
 
         // PasswordField
-        JPasswordField passField = new JPasswordField();
+        passField = new JPasswordField();
         passField.setBounds(80, 215, 270, 30);
         rightPanel.add(passField);
 
@@ -87,8 +95,35 @@ public class LoginForm extends JFrame {
         loginButton.setForeground(Color.WHITE);
         loginButton.setFont(new Font("Arial", Font.BOLD, 14));
         rightPanel.add(loginButton);
+
+        //ActionListener 4 login button
+        loginButton.addActionListener(e -> handleLogin());
     }
+
+    private void handleLogin() {
+        String username = userNameField.getText().trim();
+        String password = new String(passField.getPassword()).trim();
+
+        if (username.isEmpty() || password.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter both username and password!", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (loginListener != null) {
+            loginListener.onLogin(username, password);
+        }
+    }
+
+    public void setLoginListener(LoginListener loginListener) {
+        this.loginListener = loginListener;
+    }
+
     public static void main(String[] args) {
-        new LoginForm().setVisible(true);
+        SwingUtilities.invokeLater(() -> {
+            LoginForm form = new LoginForm(null); // Khởi tạo trước để truyền vào controller
+            LoginController controller = new LoginController(form);
+            form.setLoginListener(controller); // Setter sẽ được thêm vào LoginForm
+            form.setVisible(true);
+        });
     }
 }
