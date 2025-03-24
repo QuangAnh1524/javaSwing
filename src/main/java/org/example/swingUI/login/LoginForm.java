@@ -1,4 +1,4 @@
-package org.example.swingUI;
+package org.example.swingUI.login;
 
 import javax.swing.*;
 import java.awt.*;
@@ -88,7 +88,6 @@ public class LoginForm extends JFrame {
         loginButton.setFont(new Font("Arial", Font.BOLD, 14));
         rightPanel.add(loginButton);
     }
-
     public static void main(String[] args) {
         new LoginForm().setVisible(true);
     }
