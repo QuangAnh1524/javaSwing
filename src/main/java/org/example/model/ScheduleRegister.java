@@ -3,7 +3,6 @@ package org.example.model;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-
 public class ScheduleRegister {
     private int scheduleId;
     private int tutorId;
