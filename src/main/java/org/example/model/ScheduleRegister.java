@@ -30,11 +30,9 @@ public class ScheduleRegister {
     public void setTutorId(int tutorId) {
         this.tutorId = tutorId;
     }
-
     public String getTutorName() {
         return tutorName;
     }
-
     public void setTutorName(String tutorName) {
         this.tutorName = tutorName;
     }
