@@ -7,20 +7,8 @@ public class Schedule {
     private int tutorId;
     private Date lessonDate;
     private Date endDate;
-    private String status; //"empty" hoac "booked"
+    private String status;
     private int studentId;
-
-    public Schedule() {
-    }
-
-    public Schedule(int scheduleId, int tutorId, Date lessonDate, Date endDate, String status, int studentId) {
-        this.scheduleId = scheduleId;
-        this.tutorId = tutorId;
-        this.lessonDate = lessonDate;
-        this.endDate = endDate;
-        this.status = status;
-        this.studentId = studentId;
-    }
 
     public int getScheduleId() {
         return scheduleId;
