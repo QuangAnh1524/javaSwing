@@ -3,7 +3,7 @@ package org.example;
 import org.example.service.AuthService;
 import java.util.Scanner;
 
-public class TestLogin {
+public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         AuthService authService = new AuthService();
