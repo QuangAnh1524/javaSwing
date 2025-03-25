@@ -38,15 +38,14 @@ public class RegisterStudent extends JPanel {
         });
 
         JPanel labelPanel = new JPanel(new GridLayout(8, 1));
-        String[] labels = {"Họ và tên: ", "Số điện thoại: ", "Chuyên môn: ", "Giờ bắt đầu: ", "Giờ kết thúc",
-        "Ngày bắt đầu: ","Thời gian: ", "Giá/1buổi: "};
+        String[] labels = {"Họ và tên: ", "Số điện thoại: ", "Chuyên môn: ", "Khung giờ: ",
+        "Ngày bắt đầu: ","Ngày kết thúc: ", "Giá: "};
         for (int i = 0; i < labels.length; i++) {
             JLabel label = new JLabel(labels[i], SwingConstants.LEFT);
             label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
             label.setForeground(new Color(135, 135, 135));
             labelPanel.add(label);
         }
-
         panel.add(btnRegister, BorderLayout.NORTH);
         panel.add(labelPanel, BorderLayout.CENTER);
 
