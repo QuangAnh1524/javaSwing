@@ -7,7 +7,6 @@ public class Tutor {
     private String phoneNumber;
     private int salary;
 
-    // Getters and Setters
     public int getTutorId() { return tutorId; }
     public void setTutorId(int tutorId) { this.tutorId = tutorId; }
     public int getUserId() { return userId; }
