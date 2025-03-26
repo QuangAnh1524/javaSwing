@@ -33,10 +33,10 @@ public class DashboardStudent extends JFrame implements MenuListener {
         add(MenuStudent, BorderLayout.WEST);
 
         // Panel đăng ký học
-        register = new RegisterStudent();
+        register = new RegisterStudent(studentService);
 
         // Panel lịch học
-        schedule = new ScheduleStudent();
+        schedule = new ScheduleStudent(studentService);
 
         ProfileStudent = new ProfileStudent(studentService);
 
