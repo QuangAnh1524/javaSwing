@@ -38,7 +38,7 @@ public class RegisterStudent extends JPanel {
         });
 
         JPanel labelPanel = new JPanel(new GridLayout(8, 1));
-        String[] labels = {"Họ và tên: ", "Số điện thoại: ", "Chuyên môn: ", "Khung giờ: ",
+        String[] labels = {"Họ và tên: ", "Số điện thoại: ", "Chuyên môn: ", "Khung giờ: ", 
         "Ngày bắt đầu: ","Ngày kết thúc: ", "Giá: "};
         for (int i = 0; i < labels.length; i++) {
             JLabel label = new JLabel(labels[i], SwingConstants.LEFT);

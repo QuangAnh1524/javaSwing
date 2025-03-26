@@ -2,6 +2,8 @@ package org.example.DAO;
 
 import org.example.model.Schedule;
 import org.example.model.ScheduleRegister;
+import org.example.model.Student;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -57,10 +59,34 @@ public class StudentDAO {
         }
     }
 
+
+    // lay thong tin progfile student
+    public Student getProfileStudent(int userId){
+        String query = "select * from students where user_id = ?";
+        try {
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setInt(1, userId);
+            ResultSet resultSet = statement.executeQuery();
+            Student student = new Student();
+            while(resultSet.next()){
+                student.setUserId(resultSet.getInt("user_id"));
+                student.setStudentId(resultSet.getInt("student_id"));
+                student.setName(resultSet.getString("name"));
+                student.setAge(resultSet.getInt("age"));
+                student.setEmail(resultSet.getString("email"));
+                student.setGrade(resultSet.getString("grade"));
+                student.setPhoneNumber(resultSet.getString("phone_number"));
+            }
+            return student;
+        }catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     // cap nhat profile hoc sinh
     public boolean updateProfileStudent
     (int studentId, String name, int age, String grade, String phoneNumber, String email){
-        String query = "update students set name = ?, age=?, grade =?, phone_number=?, email=? where student_id=?";
+        String query = "update students set name = ?, age=?, grade =?, phone_number=?, email=? where user_id=?";
         try {
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, name);
@@ -174,5 +200,8 @@ public class StudentDAO {
         }
         return schedule;
     }
+
+
+
 
 }

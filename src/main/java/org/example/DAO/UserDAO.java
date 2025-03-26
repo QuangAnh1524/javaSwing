@@ -26,4 +26,33 @@ public class UserDAO {
         }
         return false;
     }
+
+    public String getRoleByUsername(String username){
+        String role = null;
+        String query = "select role from users where username = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, username);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()){
+                role = resultSet.getString("role");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return role;
+    }
+    public int getUserIdByUsername(String username){
+        int id = 0;
+        String query = "select user_id from users where username = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, username);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()){
+                id = resultSet.getInt("user_id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return id;
+    }
 }

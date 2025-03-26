@@ -16,11 +16,11 @@ public class ScheduleStudent extends JPanel {
 
 
         // Bảng dữ liệu
-        String[] columnNames = {"Tên giáo viên", "Môn", "Giờ bắt đầu", "Giờ kết thúc", "Thứ"};
+        String[] columnNames = {"Tên giáo viên", "Môn", "Giờ bắt đầu", "Giờ kết thúc", "Ngày bắt đầu", "Ngày kết thúc"};
         Object[][] data = {
-                {"Nguyễn Văn A ", "Toán", "08:00", "09:30", "Thứ 2"},
-                {"Trần Thị B", "Văn", "10:00", "11:30", "Thứ 3"},
-                {"Lê Văn C", "Anh", "14:00", "15:30", "Thứ 4"},
+                {"Nguyễn Văn A ", "Toán", "08:00", "09:30"},
+                {"Trần Thị B", "Văn", "10:00", "11:30"},
+                {"Lê Văn C", "Anh", "14:00", "15:30"},
         };
         JTable table = new JTable(new DefaultTableModel(data, columnNames){
             @Override
