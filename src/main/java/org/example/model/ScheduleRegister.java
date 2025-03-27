@@ -1,5 +1,7 @@
 package org.example.model;
 
+import org.example.service.StudentService;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -30,11 +32,9 @@ public class ScheduleRegister {
     public void setTutorId(int tutorId) {
         this.tutorId = tutorId;
     }
-
     public String getTutorName() {
         return tutorName;
     }
-
     public void setTutorName(String tutorName) {
         this.tutorName = tutorName;
     }

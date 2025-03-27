@@ -1,47 +1,95 @@
 package org.example.swingUI.student;
 
+import org.example.manager.SessionManager;
+import org.example.model.ScheduleRegister;
+import org.example.service.StudentService;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.NumberFormat;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 public class RegisterStudent extends JPanel {
-    public RegisterStudent() {
+    private StudentService studentService;
+    private JPanel mainPanel;
+    private Map<JButton, ScheduleRegister> map = new HashMap<>(); // Lưu button và lịch học
+
+    public RegisterStudent(StudentService studentService) {
+        this.studentService = studentService;
         setSize(600, 450);
         setLayout(new BorderLayout());
 
-        JPanel mainPanel = new JPanel(new GridLayout(0, 3, 10, 10));
+        mainPanel = new JPanel(new GridLayout(0, 3, 10, 10));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        for (int i = 1; i <= 6; i++) {
-            mainPanel.add(createChildPanel("Panel"));
-        }
-        add(mainPanel);
+        loadSchedule();
+
+
+        add(mainPanel, BorderLayout.CENTER);
         setVisible(true);
     }
 
-    private JPanel createChildPanel(String panelIndex) {
+    private JPanel createChildPanel(ScheduleRegister schedule) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
 
-
+        // Nút đăng ký
         JButton btnRegister = new JButton("Đăng ký");
         btnRegister.setBackground(new Color(179, 218, 255));
         btnRegister.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        // Lắng nghe sự kiện khi bấm vào button
+        // Lưu button và lịch học vào HashMap
+        map.put(btnRegister, schedule);
+
+
+        // Xử lý sự kiện khi bấm vào nút đăng ký
         btnRegister.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(panel, "Đăng ký thành công!");
+                ScheduleRegister schedule = map.get(e.getSource());
+                if (schedule != null) {
+                    int option = JOptionPane.showConfirmDialog(SwingUtilities.getWindowAncestor(btnRegister), "Do you want to register?", "Register", JOptionPane.YES_NO_OPTION);
+                    if(option == JOptionPane.YES_OPTION){
+                        boolean rs =  studentService.registerScheduleStudent(
+                                SessionManager.getInstance().getUserId(),
+                                schedule.getScheduleId(),
+                                schedule.getTutorId());
+                        if(rs){
+                            JOptionPane.showMessageDialog( SwingUtilities.getWindowAncestor(btnRegister), "Register successfully", "Success", JOptionPane.INFORMATION_MESSAGE);
+                            loadSchedule();
+                        }
+                        else {
+                            JOptionPane.showMessageDialog( SwingUtilities.getWindowAncestor(btnRegister), "Register failed, please check your schedule!", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                }
             }
         });
 
+        // Panel hiển thị thông tin lịch học
         JPanel labelPanel = new JPanel(new GridLayout(8, 1));
-        String[] labels = {"Họ và tên: ", "Số điện thoại: ", "Chuyên môn: ", "Giờ bắt đầu: ", "Giờ kết thúc",
-        "Ngày bắt đầu: ","Thời gian: ", "Giá/1buổi: "};
+        String[] labels = {"Họ và tên: ", "Số điện thoại: ", "Chuyên môn: ", "Khung giờ: ",
+                "Ngày bắt đầu: ","Ngày kết thúc: ", "Giá: "};
+        NumberFormat currencyFormat = NumberFormat.getInstance(new Locale("vi", "VN"));
+
+        String[] values = {
+                schedule.getTutorName(),
+                schedule.getPhoneNumber(),
+                schedule.getSubject(),
+                schedule.getTimeStart().toString() + " - " + schedule.getTimeEnd().toString(),
+                schedule.getDayStart().toString(),
+                schedule.getDayEnd().toString(),
+                currencyFormat.format(schedule.getPrice()) + " VND"
+        };
+
+        // Hiển thị thông tin lịch học
         for (int i = 0; i < labels.length; i++) {
-            JLabel label = new JLabel(labels[i], SwingConstants.LEFT);
+            JLabel label = new JLabel(labels[i] + values[i], SwingConstants.LEFT);
             label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
             label.setForeground(new Color(135, 135, 135));
             labelPanel.add(label);
@@ -49,7 +97,18 @@ public class RegisterStudent extends JPanel {
 
         panel.add(btnRegister, BorderLayout.NORTH);
         panel.add(labelPanel, BorderLayout.CENTER);
-
         return panel;
     }
+
+
+    private void loadSchedule() {
+        mainPanel.removeAll();
+        List<ScheduleRegister> schedules = studentService.getEmptySchedule();
+        for (ScheduleRegister schedule : schedules) {
+            mainPanel.add(createChildPanel(schedule));
+        }
+        mainPanel.revalidate();
+        mainPanel.repaint();
+    }
+
 }
