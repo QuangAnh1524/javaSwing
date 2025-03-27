@@ -1,6 +1,11 @@
 package org.example.swingUI.student;
 
+import org.example.DAO.UserDAO;
+import org.example.manager.SessionManager;
+import org.example.service.AuthService;
+import org.example.service.StudentService;
 import org.example.swingUI.listener.MenuListener;
+import org.example.swingUI.login.LoginForm;
 
 import javax.swing.*;
 import java.awt.*;
@@ -9,7 +14,16 @@ public class DashboardStudent extends JFrame implements MenuListener {
     private ScheduleStudent schedule;
     private RegisterStudent register;
     private ProfileStudent ProfileStudent;
-    public DashboardStudent(){
+
+
+    private LoginForm loginForm;
+    private StudentService studentService;
+
+    public DashboardStudent(LoginForm loginForm,StudentService studentService){
+        this.studentService = studentService;
+        this.loginForm = loginForm;
+
+
         setSize(800, 450);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -19,21 +33,18 @@ public class DashboardStudent extends JFrame implements MenuListener {
         add(MenuStudent, BorderLayout.WEST);
 
         // Panel đăng ký học
-        register = new RegisterStudent();
+        register = new RegisterStudent(studentService);
 
         // Panel lịch học
-        schedule = new ScheduleStudent();
+        schedule = new ScheduleStudent(studentService);
 
-        ProfileStudent = new ProfileStudent();
+        ProfileStudent = new ProfileStudent(studentService);
 
         // Mặc định hiển thị giao diện đăng ký học
         add(register, BorderLayout.CENTER);
 
         setLocationRelativeTo(null);
         setVisible(true);
-    }
-    public static void main(String[] args) {
-        new DashboardStudent().setVisible(true);
     }
 
     @Override
@@ -59,10 +70,16 @@ public class DashboardStudent extends JFrame implements MenuListener {
                 add(ProfileStudent, BorderLayout.CENTER);
                 break;
             case "Đăng xuất":
-                System.out.println("Thoát ứng dụng.");
+                int option = JOptionPane.showConfirmDialog(this, "Do you want to log out?", "Log out", JOptionPane.YES_NO_OPTION);
+                if(option == JOptionPane.YES_OPTION){
+                    loginForm.setVisible(true);
+                    SessionManager.getInstance().setUserId(0);
+                    dispose();
+                }
                 break;
         }
         revalidate();
         repaint();
     }
+
 }

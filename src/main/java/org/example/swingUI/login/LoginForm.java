@@ -1,18 +1,23 @@
 package org.example.swingUI.login;
 
-import org.example.swingUI.controller.LoginController;
-import org.example.swingUI.listener.LoginListener;
+import org.example.manager.SessionManager;
+import org.example.service.AuthService;
+import org.example.service.StudentService;
+import org.example.swingUI.student.DashboardStudent;
+
 import javax.swing.*;
 import java.awt.*;
 
 public class LoginForm extends JFrame {
     private JTextField userNameField;
     private JPasswordField passField;
-    private LoginListener loginListener;
+    private AuthService auth;
 
-    public LoginForm(LoginListener loginListener) {
-        this.loginListener = loginListener;
+    private StudentService studentService;
 
+    public LoginForm(AuthService auth, StudentService studentService) {
+        this.auth = auth;
+        this.studentService = studentService;
         setTitle("Login Form");
         setSize(800, 450);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -98,6 +103,8 @@ public class LoginForm extends JFrame {
 
         //ActionListener 4 login button
         loginButton.addActionListener(e -> handleLogin());
+
+
     }
 
     private void handleLogin() {
@@ -106,24 +113,26 @@ public class LoginForm extends JFrame {
 
         if (username.isEmpty() || password.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Please enter both username and password!", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
         }
+        else {
+            boolean isValid = auth.login(username, password);
+            if (isValid) {
+                userNameField.setText("");
+                passField.setText("");
+                int userId = auth.getUserIdByUsername(username);
+                SessionManager.getInstance().setUserId(userId);
+                if(auth.getRoleByUsername(username).equals("tutor")){
 
-        if (loginListener != null) {
-            loginListener.onLogin(username, password);
+                }
+                else {
+                    new DashboardStudent(this, studentService).setVisible(true);
+                }
+                dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, "Invalid username or password!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
-    public void setLoginListener(LoginListener loginListener) {
-        this.loginListener = loginListener;
-    }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            LoginForm form = new LoginForm(null); // Khởi tạo trước để truyền vào controller
-            LoginController controller = new LoginController(form);
-            form.setLoginListener(controller); // Setter sẽ được thêm vào LoginForm
-            form.setVisible(true);
-        });
-    }
 }

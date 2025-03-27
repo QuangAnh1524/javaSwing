@@ -2,6 +2,8 @@ package org.example.DAO;
 
 import org.example.model.Schedule;
 import org.example.model.ScheduleRegister;
+import org.example.model.Student;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,23 +19,38 @@ public class StudentDAO {
     }
 
     // lay lich da dang ky cua hoc sinh
-    public List<Schedule> getScheduleStudent(int student_id){
-        List<Schedule> schedules = new ArrayList<>();
-        String query = "select * from schedule where student_id = ?";
+    public List<ScheduleRegister> getScheduleStudent(int student_id){
+        List<ScheduleRegister> schedules = new ArrayList<>();
+        String query = "SELECT " +
+                "s.schedule_id," +
+                "s.time_start," +
+                "s.time_end," +
+                "s.day_start," +
+                "s.day_end," +
+                "s.subject," +
+                "t.tutor_id," +
+                "t.name," +
+                "t.phone_number," +
+                "t.salary " +
+                "FROM schedule s " +
+                "JOIN tutors t ON s.tutor_id = t.tutor_id " +
+                "where student_id = (SELECT student_id FROM students WHERE user_id = ?)";
         try {
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setInt(1, student_id);
             ResultSet resultSet = statement.executeQuery();
             while(resultSet.next()){
-                Schedule schedule = new Schedule();
+                ScheduleRegister schedule = new ScheduleRegister();
                 schedule.setScheduleId(resultSet.getInt("schedule_id"));
-                schedule.setTutorId(resultSet.getInt("(tutor_id"));
-                schedule.setStudentId(resultSet.getInt("student_id"));
-                schedule.setStatus(resultSet.getString("status"));
+                schedule.setTutorId(resultSet.getInt("tutor_id"));
                 schedule.setTimeStart(resultSet.getTime("time_start").toLocalTime());
                 schedule.setTimeEnd(resultSet.getTime("time_end").toLocalTime());
                 schedule.setDayStart(resultSet.getDate("day_start").toLocalDate());
                 schedule.setDayEnd(resultSet.getDate("day_end").toLocalDate());
+                schedule.setTutorName(resultSet.getString("name"));
+                schedule.setPhoneNumber(resultSet.getString("phone_number"));
+                schedule.setPrice(resultSet.getInt("salary"));
+                schedule.setSubject(resultSet.getString("subject"));
                 schedules.add(schedule);
             }
         }catch (SQLException e) {
@@ -43,11 +60,11 @@ public class StudentDAO {
     }
 
     // dang ky hoc cho sinh vien
-    public boolean registerScheduleStudent(int student_id,int scheduleId, int tutorId) {
-        String query = "update schedule set student_id = ?, status = 'booked' where schedule_id = ? and tutor_id = ?";
+    public boolean registerScheduleStudent(int user_id,int scheduleId, int tutorId) {
+        String query = "update schedule set student_id = (SELECT student_id FROM students WHERE user_id = ?), status = 'booked' where schedule_id = ? and tutor_id = ?";
         try{
             PreparedStatement statement = connection.prepareStatement(query);
-            statement.setInt(1, student_id);
+            statement.setInt(1, user_id);
             statement.setInt(2, scheduleId);
             statement.setInt(3, tutorId);
             int rows = statement.executeUpdate();
@@ -57,10 +74,34 @@ public class StudentDAO {
         }
     }
 
+
+    // lay thong tin profile student
+    public Student getProfileStudent(int userId){
+        String query = "select * from students where user_id = ?";
+        try {
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setInt(1, userId);
+            ResultSet resultSet = statement.executeQuery();
+            Student student = new Student();
+            while(resultSet.next()){
+                student.setUserId(resultSet.getInt("user_id"));
+                student.setStudentId(resultSet.getInt("student_id"));
+                student.setName(resultSet.getString("name"));
+                student.setAge(resultSet.getInt("age"));
+                student.setEmail(resultSet.getString("email"));
+                student.setGrade(resultSet.getString("grade"));
+                student.setPhoneNumber(resultSet.getString("phone_number"));
+            }
+            return student;
+        }catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     // cap nhat profile hoc sinh
     public boolean updateProfileStudent
     (int studentId, String name, int age, String grade, String phoneNumber, String email){
-        String query = "update students set name = ?, age=?, grade =?, phone_number=?, email=? where student_id=?";
+        String query = "update students set name = ?, age=?, grade =?, phone_number=?, email=? where user_id=?";
         try {
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, name);
@@ -83,15 +124,16 @@ public class StudentDAO {
 
     // check lich dang ky moi co trung khung gio hay khong
     public boolean checkScheduleValid(int student_id, int schedule_id){
-        List<Schedule> listSchedule = getScheduleStudent(student_id);
+        List<ScheduleRegister> listSchedule = getScheduleStudent(student_id);
+        if(listSchedule == null){
+            return true;
+        }
         Schedule currentSchedule = getScheduleById(schedule_id);
 
         for(int i = 0;i < listSchedule.size(); i++){
-
             if(!currentSchedule.getDayStart().isEqual(listSchedule.get(i).getDayStart())){
                 return true;
             }
-
             if(!(currentSchedule.getTimeStart().isAfter(listSchedule.get(i).getTimeEnd())
                 || currentSchedule.getTimeEnd().isBefore(listSchedule.get(i).getTimeStart())
             )){
@@ -101,55 +143,32 @@ public class StudentDAO {
         return true;
     }
 
-
     //lấy lịch trống để hoc sinh dang ky
     public List<ScheduleRegister> getEmptySchedule() {
         List<ScheduleRegister> scheduleList = new ArrayList<>();
-        String query = "select * from schedule join tutors on schedule.tutor_id = tutors.tutor_id where status = 'empty' order by tutor_id";
-        try{
+        String query = "SELECT * FROM schedule JOIN tutors ON schedule.tutor_id = tutors.tutor_id WHERE status = 'empty' ORDER BY tutors.tutor_id";
+        try {
             PreparedStatement statement = connection.prepareStatement(query);
             ResultSet resultSet = statement.executeQuery();
+
             while (resultSet.next()) {
                 ScheduleRegister schedule = new ScheduleRegister();
                 schedule.setScheduleId(resultSet.getInt("schedule_id"));
-                schedule.setTutorId(resultSet.getInt("(tutor_id"));
+                schedule.setTutorId(resultSet.getInt("tutor_id"));
                 schedule.setTutorName(resultSet.getString("name"));
                 schedule.setPhoneNumber(resultSet.getString("phone_number"));
-                schedule.setSubject(getSubjectByTutorId(resultSet.getInt("(tutor_id")));
+                schedule.setSubject(resultSet.getString("subject"));
+                schedule.setPrice(resultSet.getInt("salary"));
                 schedule.setTimeStart(resultSet.getTime("time_start").toLocalTime());
                 schedule.setTimeEnd(resultSet.getTime("time_end").toLocalTime());
                 schedule.setDayStart(resultSet.getDate("day_start").toLocalDate());
                 schedule.setDayEnd(resultSet.getDate("day_end").toLocalDate());
-                scheduleList.add(schedule);
+                scheduleList.add(schedule); 
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
         return scheduleList;
-    }
-
-    // lay list subject cua giao vien de set thuoc tinh dang ky
-    private String getSubjectByTutorId(int tutorId){
-        String rs = "";
-        String query = "SELECT s.subject_name\n" +
-                "FROM subjects s\n" +
-                "JOIN subject_tutor st ON s.subject_id = st.subject_id;" +
-                "WHERE tutor_id = ?";
-        try{
-            PreparedStatement statement = connection.prepareStatement(query);
-            statement.setInt(1, tutorId);
-
-            ResultSet resultSet = statement.executeQuery();
-            while(resultSet.next()){
-                rs += resultSet.getString("subject_name");
-                if (!resultSet.isLast()) {
-                    rs += ", ";
-                }
-            }
-        }catch (SQLException e){
-            throw  new RuntimeException(e);
-        }
-        return rs;
     }
 
     // lay lich theo id
@@ -160,19 +179,26 @@ public class StudentDAO {
             PreparedStatement state = connection.prepareStatement(query);
             state.setInt(1, schedule_id);
             ResultSet rs = state.executeQuery();
-            schedule.setScheduleId(rs.getInt("schedule_id"));
-            schedule.setTutorId(rs.getInt("(tutor_id"));
-            schedule.setStudentId(rs.getInt("student_id"));
-            schedule.setStatus(rs.getString("status"));
-            schedule.setTimeStart(rs.getTime("time_start").toLocalTime());
-            schedule.setTimeEnd(rs.getTime("time_end").toLocalTime());
-            schedule.setDayStart(rs.getDate("day_start").toLocalDate());
-            schedule.setDayEnd(rs.getDate("day_end").toLocalDate());
+            while(rs.next()){
+                schedule.setScheduleId(rs.getInt("schedule_id"));
+                schedule.setTutorId(rs.getInt("tutor_id"));
+                schedule.setStudentId(rs.getInt("student_id"));
+                schedule.setStatus(rs.getString("status"));
+                schedule.setTimeStart(rs.getTime("time_start").toLocalTime());
+                schedule.setTimeEnd(rs.getTime("time_end").toLocalTime());
+                schedule.setDayStart(rs.getDate("day_start").toLocalDate());
+                schedule.setDayEnd(rs.getDate("day_end").toLocalDate());
+            }
         }
         catch (SQLException e){
             throw new RuntimeException(e);
         }
         return schedule;
     }
+
+
+
+
+
 
 }

@@ -1,22 +1,28 @@
 package org.example;
 
+import org.example.DAO.StudentDAO;
+import org.example.DAO.UserDAO;
+import org.example.database.DatabaseConnection;
 import org.example.service.AuthService;
-import java.util.Scanner;
+import org.example.service.StudentService;
+import org.example.swingUI.login.LoginForm;
 
+import javax.swing.*;
 public class Main {
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        AuthService authService = new AuthService();
-        System.out.print("Nhập tên đăng nhập: ");
-        String username = scanner.nextLine();
-        System.out.print("Nhập mật khẩu: ");
-        String password = scanner.nextLine();
-        boolean isValid = authService.login(username, password);
-        if (isValid) {
-            System.out.println("Đăng nhập thành công!");
-        } else {
-            System.out.println("Đăng nhập thất bại! Sai tên đăng nhập hoặc mật khẩu.");
-        }
-        scanner.close();
+        SwingUtilities.invokeLater(() -> {
+            DatabaseConnection db = new DatabaseConnection();
+
+            UserDAO userDAO = new UserDAO();
+            AuthService authService = new AuthService(userDAO);
+
+            StudentDAO studentDAO = new StudentDAO(db.getConnection());
+            StudentService studentService = new StudentService(studentDAO);
+
+
+
+            LoginForm form = new LoginForm(authService,studentService);
+            form.setVisible(true);
+        });
     }
 }
