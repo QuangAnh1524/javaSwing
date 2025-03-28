@@ -10,13 +10,15 @@ public class Schedule {
     private LocalTime timeEnd;
     private LocalDate dayStart;
     private LocalDate dayEnd;
-    private String status;  // "empty" or "booked"
+    private String status;
     private int studentId;
+    private String subject;
 
     public Schedule() {
         this.status = "empty";
     }
 
+    // Getters và Setters
     public int getScheduleId() { return scheduleId; }
     public void setScheduleId(int scheduleId) { this.scheduleId = scheduleId; }
     public int getTutorId() { return tutorId; }
@@ -33,4 +35,6 @@ public class Schedule {
     public void setStatus(String status) { this.status = status; }
     public int getStudentId() { return studentId; }
     public void setStudentId(int studentId) { this.studentId = studentId; }
+    public String getSubject() { return subject; }
+    public void setSubject(String subject) { this.subject = subject; }
 }
