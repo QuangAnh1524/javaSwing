@@ -83,4 +83,17 @@ public class TutorDAO {
         }
         return null;
     }
-}
+
+    //cap nhat thong tin gsu
+    public boolean updateTutor(int tutorId, String name, String phoneNumber, int salary) {
+        String query = "UPDATE tutors SET name = ?, phone_number = ?, salary = ? WHERE tutor_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, name);
+            stmt.setString(2, phoneNumber);
+            stmt.setInt(3, salary);
+            stmt.setInt(4, tutorId);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error updating tutor: " + e.getMessage(), e);
+        }
+}}

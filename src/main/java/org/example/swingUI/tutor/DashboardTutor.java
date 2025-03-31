@@ -1,84 +1,69 @@
 package org.example.swingUI.tutor;
 
+import org.example.manager.SessionManager;
 import org.example.swingUI.listener.MenuListener;
-import org.example.swingUI.student.*;
+import org.example.swingUI.login.LoginForm;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class DashboardTutor extends JFrame implements MenuListener{
-    private ProfileTutor ProfileTutor;
+public class DashboardTutor extends JFrame implements MenuListener {
+    private ProfileTutor profileTutor;
     private ScheduleTutor schedule;
     private RegisterTutor register;
     private SalaryTutor salaryTutor;
+    private JPanel currentPanel;
 
-
-    public DashboardTutor(){
+    public DashboardTutor() {
         setSize(800, 450);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // Sidebar
-        MenuTutor MenuTutor = new MenuTutor(this);
-        add(MenuTutor, BorderLayout.WEST);
+        MenuTutor menuTutor = new MenuTutor(this);
+        add(menuTutor, BorderLayout.WEST);
 
-        // Panel đăng ký dạy
         register = new RegisterTutor();
-
-        // Panel lịch day
         schedule = new ScheduleTutor();
-
-        // Panel profile
-        ProfileTutor = new ProfileTutor();
-
-        //panel salary
+        profileTutor = new ProfileTutor();
         salaryTutor = new SalaryTutor();
 
-        // Mặc định hiển thị giao diện lịch dạy
-        add(register, BorderLayout.CENTER);
+        currentPanel = register; // Mặc định
+        add(currentPanel, BorderLayout.CENTER);
 
         setLocationRelativeTo(null);
-        setVisible(true);
     }
 
-    public static void main(String[] args) {
-        new DashboardTutor().setVisible(true);
-    }
     @Override
     public void onMenuSelected(String menuText) {
+        if (currentPanel != null) {
+            remove(currentPanel);
+        }
+
+        int tutorId = SessionManager.getInstance().getUserId(); // Lấy tutorId từ session
+
         switch (menuText) {
             case "Đăng ký dạy":
-                schedule.setVisible(false);
-                register.setVisible(true);
-                ProfileTutor.setVisible(false);
-                salaryTutor.setVisible(false);
-                add(register, BorderLayout.CENTER);
+                currentPanel = register;
                 break;
             case "Lịch dạy":
-                schedule.setVisible(true);
-                register.setVisible(false);
-                ProfileTutor.setVisible(false);
-                salaryTutor.setVisible(false);
-                add(schedule, BorderLayout.CENTER);
+                currentPanel = schedule;
+                schedule.loadScheduleData(tutorId); // Truyền tutorId
                 break;
             case "Thông tin cá nhân":
-                schedule.setVisible(false);
-                register.setVisible(false);
-                ProfileTutor.setVisible(true);
-                salaryTutor.setVisible(false);
-                add(ProfileTutor, BorderLayout.CENTER);
+                currentPanel = profileTutor;
+                profileTutor.loadProfileData(tutorId); // Truyền tutorId
                 break;
             case "Thống kê lương":
-                schedule.setVisible(false);
-                register.setVisible(false);
-                ProfileTutor.setVisible(false);
-                salaryTutor.setVisible(true);
-                add(salaryTutor, BorderLayout.CENTER);
+                currentPanel = salaryTutor;
                 break;
             case "Đăng xuất":
                 System.out.println("Thoát ứng dụng.");
-                break;
+                SessionManager.getInstance().setUserId(-1); // Xóa session
+                dispose(); // Đóng DashboardTutor
+                new LoginForm().setVisible(true); // Quay lại màn đăng nhập
+                return;
         }
+        add(currentPanel, BorderLayout.CENTER);
         revalidate();
         repaint();
     }

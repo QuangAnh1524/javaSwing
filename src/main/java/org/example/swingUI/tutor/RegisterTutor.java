@@ -1,10 +1,19 @@
 package org.example.swingUI.tutor;
 
+import org.example.database.DatabaseConnection;
+import org.example.manager.SessionManager;
+import org.example.service.ScheduleService;
+import org.example.DAO.ScheduleDAO;
+
 import javax.swing.*;
 import java.awt.*;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
+import java.sql.Connection;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+
+import com.toedter.calendar.JDateChooser;
 
 public class RegisterTutor extends JPanel {
     private JLabel jLabelTutorName;
@@ -16,12 +25,22 @@ public class RegisterTutor extends JPanel {
     private JLabel jLabelEndTime;
     private JTextField jTextFieldEndTime;
     private JLabel jLabelStartDate;
-    private JTextField jTextFieldStartDate;
+    private JDateChooser jDateChooserStartDate; // Thay JTextField bằng JDateChooser
     private JLabel jLabelEndDate;
-    private JTextField jTextFieldEndDate;
+    private JDateChooser jDateChooserEndDate;   // Thay JTextField bằng JDateChooser
     private JButton jButtonSubmit;
 
+    private ScheduleService scheduleService;
+
     public RegisterTutor() {
+        try {
+            Connection connection = DatabaseConnection.getConnection();
+            ScheduleDAO scheduleDAO = new ScheduleDAO(connection);
+            scheduleService = new ScheduleService(scheduleDAO);
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Không thể kết nối cơ sở dữ liệu!");
+        }
         setSize(600, 450);
         initComponents();
     }
@@ -35,19 +54,17 @@ public class RegisterTutor extends JPanel {
         jComboBoxStartTime = new JComboBox<>(new String[]{"08:00", "09:00", "10:00", "13:00", "14:00", "15:00", "16:00", "17:00"});
         jLabelEndTime = new JLabel("Thời gian kết thúc");
         jTextFieldEndTime = new JTextField();
-        jTextFieldEndTime.setEditable(false); // Không cho phép sửa đổi thời gian kết thúc
+        jTextFieldEndTime.setEditable(false);
         jLabelStartDate = new JLabel("Ngày bắt đầu");
-        jTextFieldStartDate = new JTextField();
+        jDateChooserStartDate = new JDateChooser(); // Sử dụng JDateChooser
         jLabelEndDate = new JLabel("Ngày kết thúc");
-        jTextFieldEndDate = new JTextField();
-        jTextFieldEndDate.setEditable(false); // Không cho phép sửa đổi ngày kết thúc
+        jDateChooserEndDate = new JDateChooser();   // Sử dụng JDateChooser
+        jDateChooserEndDate.setEnabled(false);      // Không cho chỉnh sửa trực tiếp
         jButtonSubmit = new JButton("Đăng ký");
 
-        // Thiết lập GroupLayout cho panel
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
 
-        // Thiết lập nhóm ngang (Horizontal Group)
         layout.setHorizontalGroup(
                 layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createSequentialGroup()
@@ -65,17 +82,15 @@ public class RegisterTutor extends JPanel {
                                         .addComponent(jTextFieldSubject, GroupLayout.PREFERRED_SIZE, 211, GroupLayout.PREFERRED_SIZE)
                                         .addComponent(jComboBoxStartTime, GroupLayout.PREFERRED_SIZE, 211, GroupLayout.PREFERRED_SIZE)
                                         .addComponent(jTextFieldEndTime, GroupLayout.PREFERRED_SIZE, 211, GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(jTextFieldStartDate, GroupLayout.PREFERRED_SIZE, 211, GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(jTextFieldEndDate, GroupLayout.PREFERRED_SIZE, 211, GroupLayout.PREFERRED_SIZE))
+                                        .addComponent(jDateChooserStartDate, GroupLayout.PREFERRED_SIZE, 211, GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(jDateChooserEndDate, GroupLayout.PREFERRED_SIZE, 211, GroupLayout.PREFERRED_SIZE))
                                 .addContainerGap(46, Short.MAX_VALUE))
                         .addGroup(layout.createSequentialGroup()
-                                .addGap(150) // Điều chỉnh khoảng cách để căn giữa
+                                .addGap(150)
                                 .addComponent(jButtonSubmit, GroupLayout.PREFERRED_SIZE, 100, GroupLayout.PREFERRED_SIZE)
-                                .addGap(150)) // Điều chỉnh khoảng cách để căn giữa
-
+                                .addGap(150))
         );
 
-        // Thiết lập nhóm dọc (Vertical Group)
         layout.setVerticalGroup(
                 layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createSequentialGroup()
@@ -97,56 +112,80 @@ public class RegisterTutor extends JPanel {
                                         .addComponent(jLabelEndTime))
                                 .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                        .addComponent(jTextFieldStartDate, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(jDateChooserStartDate, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                         .addComponent(jLabelStartDate))
                                 .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                        .addComponent(jTextFieldEndDate, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(jDateChooserEndDate, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                         .addComponent(jLabelEndDate))
                                 .addGap(30, 30, 30)
                                 .addComponent(jButtonSubmit)
                                 .addContainerGap(56, Short.MAX_VALUE))
         );
 
-        // Lắng nghe sự kiện chọn thời gian bắt đầu để tính toán và cập nhật thời gian kết thúc
+        // Cập nhật thời gian kết thúc dựa trên thời gian bắt đầu
         jComboBoxStartTime.addActionListener(e -> {
             String startTime = (String) jComboBoxStartTime.getSelectedItem();
             if (startTime != null) {
-                // Giả sử thời gian bắt đầu có định dạng HH:mm
                 String[] parts = startTime.split(":");
                 int hour = Integer.parseInt(parts[0]);
                 int minute = Integer.parseInt(parts[1]);
                 hour += 2; // Thêm 2 giờ
-
-                // Định dạng lại thời gian kết thúc
                 String endTime = String.format("%02d:%02d", hour, minute);
                 jTextFieldEndTime.setText(endTime);
             }
         });
 
-        // Lắng nghe sự kiện thay đổi ngày bắt đầu để tính toán và cập nhật ngày kết thúc
-        jTextFieldStartDate.addActionListener(e -> {
+        // Cập nhật ngày kết thúc dựa trên ngày bắt đầu
+        jDateChooserStartDate.addPropertyChangeListener("date", evt -> {
+            java.util.Date startDate = jDateChooserStartDate.getDate();
+            if (startDate != null) {
+                LocalDate localStartDate = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                LocalDate localEndDate = localStartDate.plusMonths(2); // Thêm 2 tháng
+                jDateChooserEndDate.setDate(java.util.Date.from(localEndDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+            }
+        });
+
+        // Xử lý nút Đăng ký
+        jButtonSubmit.addActionListener(e -> {
             try {
-                String startDateStr = jTextFieldStartDate.getText();
-                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-                Date startDate = sdf.parse(startDateStr);
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTime(startDate);
-                calendar.add(Calendar.MONTH, 2); // Thêm 2 tháng
-                String endDateStr = sdf.format(calendar.getTime());
-                jTextFieldEndDate.setText(endDateStr);
+                String subject = jTextFieldSubject.getText();
+                String startTimeStr = (String) jComboBoxStartTime.getSelectedItem();
+                String endTimeStr = jTextFieldEndTime.getText();
+                java.util.Date startDate = jDateChooserStartDate.getDate();
+                java.util.Date endDate = jDateChooserEndDate.getDate();
+
+                if (startDate == null || endDate == null) {
+                    JOptionPane.showMessageDialog(this, "Vui lòng chọn ngày bắt đầu và ngày kết thúc!");
+                    return;
+                }
+
+                LocalTime timeStart = LocalTime.parse(startTimeStr);
+                LocalTime timeEnd = LocalTime.parse(endTimeStr);
+                LocalDate dayStart = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                LocalDate dayEnd = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+                int tutorId = SessionManager.getInstance().getUserId(); // Lấy từ session
+
+                boolean success = scheduleService.createSchedule(tutorId, subject, timeStart, timeEnd, dayStart, dayEnd);
+                if (success) {
+                    JOptionPane.showMessageDialog(this, "Đăng ký lịch dạy thành công!");
+                    clearFields();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Đăng ký thất bại. Có thể lịch bị trùng!");
+                }
             } catch (Exception ex) {
-                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage());
             }
         });
     }
 
-//    public static void main(String[] args) {
-//        JFrame frame = new JFrame("Đăng ký lịch dạy");
-//        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//        frame.add(new RegisterTutor());
-//        frame.pack();
-//        frame.setLocationRelativeTo(null);
-//        frame.setVisible(true);
-//    }
+    private void clearFields() {
+        jTextFieldTutorName.setText("");
+        jTextFieldSubject.setText("");
+        jComboBoxStartTime.setSelectedIndex(0);
+        jTextFieldEndTime.setText("");
+        jDateChooserStartDate.setDate(null);
+        jDateChooserEndDate.setDate(null);
+    }
 }

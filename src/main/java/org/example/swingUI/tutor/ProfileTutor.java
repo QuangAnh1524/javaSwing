@@ -1,6 +1,13 @@
 package org.example.swingUI.tutor;
 
+import org.example.DAO.TutorDAO;
+import org.example.database.DatabaseConnection;
+import org.example.manager.SessionManager;
+import org.example.model.Tutor;
+
 import javax.swing.*;
+import java.awt.*;
+import java.sql.Connection;
 
 public class ProfileTutor extends JPanel {
     private JButton jButtonSave;
@@ -10,10 +17,18 @@ public class ProfileTutor extends JPanel {
     private JTextField jTextFieldName;
     private JTextField jTextFieldPhone;
     private JTextField jTextFieldSalary;
+    private TutorDAO tutorDAO;
 
     public ProfileTutor() {
+        try {
+            Connection connection = DatabaseConnection.getConnection();
+            tutorDAO = new TutorDAO(connection);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         setSize(600, 450);
         initComponents();
+        loadProfileData(1); // Giả định tutorId = 1
     }
 
     private void initComponents() {
@@ -65,5 +80,31 @@ public class ProfileTutor extends JPanel {
                         .addGap(30)
                         .addComponent(jButtonSave)
         );
+
+        jButtonSave.addActionListener(e -> {
+            try {
+                int tutorId = SessionManager.getInstance().getUserId(); // Lấy từ session
+                String name = jTextFieldName.getText();
+                String phone = jTextFieldPhone.getText();
+                int salary = Integer.parseInt(jTextFieldSalary.getText());
+                boolean success = tutorDAO.updateTutor(tutorId, name, phone, salary);
+                if (success) {
+                    JOptionPane.showMessageDialog(this, "Cập nhật thông tin thành công!");
+                } else {
+                    JOptionPane.showMessageDialog(this, "Cập nhật thất bại!");
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage());
+            }
+        });
+    }
+
+    void loadProfileData(int tutorId) {
+        Tutor tutor = tutorDAO.getTutorById(tutorId);
+        if (tutor != null) {
+            jTextFieldName.setText(tutor.getName());
+            jTextFieldPhone.setText(tutor.getPhoneNumber());
+            jTextFieldSalary.setText(String.valueOf(tutor.getSalary()));
+        }
     }
 }
