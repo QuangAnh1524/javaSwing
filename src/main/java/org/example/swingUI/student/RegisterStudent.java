@@ -60,9 +60,23 @@ public class RegisterStudent extends JPanel {
 
 
 
+
+
+        add(findPanel, BorderLayout.NORTH);
         add(mainPanel, BorderLayout.CENTER);
         setVisible(true);
     }
+    private void loadSchedule() {
+        mainPanel.removeAll();
+        List<ScheduleRegister> schedules = studentService.getEmptySchedule();
+        for (ScheduleRegister schedule : schedules) {
+            mainPanel.add(createChildPanel(schedule));
+        }
+        mainPanel.revalidate();
+        mainPanel.repaint();
+    }
+
+
 
     private JPanel createChildPanel(ScheduleRegister schedule) {
         JPanel panel = new JPanel(new BorderLayout());
