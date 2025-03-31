@@ -145,14 +145,6 @@ public class RegisterStudent extends JPanel {
     }
 
 
-    private void loadSchedule() {
-        mainPanel.removeAll();
-        List<ScheduleRegister> schedules = studentService.getEmptySchedule();
-        for (ScheduleRegister schedule : schedules) {
-            mainPanel.add(createChildPanel(schedule));
-        }
-        mainPanel.revalidate();
-        mainPanel.repaint();
-    }
+
 
 }
