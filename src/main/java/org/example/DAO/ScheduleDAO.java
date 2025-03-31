@@ -12,11 +12,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ScheduleDAO {
-    private final Connection connection;
+    private Connection connection;
+
+    public ScheduleDAO() {}
 
     public ScheduleDAO(Connection connection) {
         this.connection = connection;
     }
+
 
     /**
      * Tạo một lịch học mới trong database
@@ -148,5 +151,41 @@ public class ScheduleDAO {
         schedule.setPhoneNumber(resultSet.getString("phone_number"));
         schedule.setPrice(resultSet.getInt("salary"));
         return schedule;
+    }
+
+    public List<ScheduleRegister> getAllSchedules() {
+        List<ScheduleRegister> schedules = new ArrayList<>();
+        String query = "SELECT s.*, t.name AS tutor_name, t.phone_number, t.salary " +
+                "FROM schedule s JOIN tutors t ON s.tutor_id = t.tutor_id";
+        try (PreparedStatement stmt = connection.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                ScheduleRegister sr = new ScheduleRegister();
+                sr.setScheduleId(rs.getInt("schedule_id"));
+                sr.setTutorId(rs.getInt("tutor_id"));
+                sr.setSubject(rs.getString("subject"));
+                sr.setTimeStart(rs.getTime("time_start").toLocalTime());
+                sr.setTimeEnd(rs.getTime("time_end").toLocalTime());
+                sr.setDayStart(rs.getDate("day_start").toLocalDate());
+                sr.setDayEnd(rs.getDate("day_end").toLocalDate());
+                sr.setTutorName(rs.getString("tutor_name"));
+                sr.setPhoneNumber(rs.getString("phone_number"));
+                sr.setPrice(rs.getInt("salary"));
+                schedules.add(sr);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error fetching all schedules: " + e.getMessage(), e);
+        }
+        return schedules;
+    }
+
+    public boolean deleteSchedule(int scheduleId) {
+        String query = "DELETE FROM schedule WHERE schedule_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, scheduleId);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error deleting schedule: " + e.getMessage(), e);
+        }
     }
 }

@@ -3,6 +3,7 @@ package org.example.DAO;
 import org.example.model.Schedule;
 import org.example.model.ScheduleRegister;
 import org.example.model.Student;
+import org.example.model.Tutor;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,8 +15,44 @@ import java.util.List;
 public class StudentDAO {
     private Connection connection;
 
+    public StudentDAO() {}
     public StudentDAO(Connection connection) {
         this.connection = connection;
+    }
+
+    //lay tat ca hoc sinh
+    public List<Student> getAllStudents() {
+        List<Student> students = new ArrayList<>();
+        String query = "select * from students";
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                Student student = new Student();
+                student.setUserId(resultSet.getInt("user_id"));
+                student.setStudentId(resultSet.getInt("student_id"));
+                student.setName(resultSet.getString("name"));
+                student.setAge(resultSet.getInt("age"));
+                student.setEmail(resultSet.getString("email"));
+                student.setGrade(resultSet.getString("grade"));
+                student.setPhoneNumber(resultSet.getString("phone_number"));
+                students.add(student);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return students;
+    }
+
+    //xoa hoc sinh
+    public boolean deleteStudent(int studentId) {
+        String query = "DELETE FROM students WHERE student_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, studentId);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error deleting student: " + e.getMessage(), e);
+        }
     }
 
     // lay lich da dang ky cua hoc sinh

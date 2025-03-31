@@ -9,7 +9,7 @@ public class DatabaseConnection {
     private static final String USER = "root";
     private static final String PASSWORD = "150204";
 
-    private static Connection connection;
+    public static Connection connection;
 
     public static Connection getConnection() {
         if (connection == null) {
