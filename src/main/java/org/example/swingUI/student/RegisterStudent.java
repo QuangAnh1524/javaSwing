@@ -29,6 +29,36 @@ public class RegisterStudent extends JPanel {
 
         loadSchedule();
 
+        JPanel findPanel = new JPanel(new FlowLayout());
+        JTextField txtFind = new JTextField();
+        txtFind.setPreferredSize(new Dimension(200, 30));
+        JButton btnFind = new JButton("Tìm kiếm");
+
+        findPanel.add(txtFind);
+        findPanel.add(btnFind);
+
+        btnFind.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mainPanel.removeAll();
+                String key = txtFind.getText().toLowerCase();
+                if(key.isEmpty()){
+                    loadSchedule();
+                }
+                else{
+                    List<ScheduleRegister> schedules = studentService.getEmptySchedule();
+                    for (ScheduleRegister schedule : schedules) {
+                        if(schedule.getSubject().toLowerCase().equals(key)){
+                            mainPanel.add(createChildPanel(schedule));
+                        }
+                    }
+                    mainPanel.revalidate();
+                    mainPanel.repaint();
+                }
+            }
+        });
+
+
 
         add(mainPanel, BorderLayout.CENTER);
         setVisible(true);
