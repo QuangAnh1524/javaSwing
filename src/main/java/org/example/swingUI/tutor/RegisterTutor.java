@@ -1,5 +1,6 @@
 package org.example.swingUI.tutor;
 
+import org.example.DAO.TutorDAO;
 import org.example.database.DatabaseConnection;
 import org.example.manager.SessionManager;
 import org.example.service.ScheduleService;
@@ -11,7 +12,6 @@ import java.sql.Connection;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 
 import com.toedter.calendar.JDateChooser;
 
@@ -25,18 +25,20 @@ public class RegisterTutor extends JPanel {
     private JLabel jLabelEndTime;
     private JTextField jTextFieldEndTime;
     private JLabel jLabelStartDate;
-    private JDateChooser jDateChooserStartDate; // Thay JTextField bằng JDateChooser
+    private JDateChooser jDateChooserStartDate;
     private JLabel jLabelEndDate;
-    private JDateChooser jDateChooserEndDate;   // Thay JTextField bằng JDateChooser
+    private JDateChooser jDateChooserEndDate;
     private JButton jButtonSubmit;
 
     private ScheduleService scheduleService;
+    private TutorDAO tutorDAO;
 
     public RegisterTutor() {
         try {
             Connection connection = DatabaseConnection.getConnection();
             ScheduleDAO scheduleDAO = new ScheduleDAO(connection);
             scheduleService = new ScheduleService(scheduleDAO);
+            tutorDAO = new TutorDAO(connection); // Khởi tạo TutorDAO
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Không thể kết nối cơ sở dữ liệu!");
@@ -56,10 +58,10 @@ public class RegisterTutor extends JPanel {
         jTextFieldEndTime = new JTextField();
         jTextFieldEndTime.setEditable(false);
         jLabelStartDate = new JLabel("Ngày bắt đầu");
-        jDateChooserStartDate = new JDateChooser(); // Sử dụng JDateChooser
+        jDateChooserStartDate = new JDateChooser();
         jLabelEndDate = new JLabel("Ngày kết thúc");
-        jDateChooserEndDate = new JDateChooser();   // Sử dụng JDateChooser
-        jDateChooserEndDate.setEnabled(false);      // Không cho chỉnh sửa trực tiếp
+        jDateChooserEndDate = new JDateChooser();
+        jDateChooserEndDate.setEnabled(false);
         jButtonSubmit = new JButton("Đăng ký");
 
         GroupLayout layout = new GroupLayout(this);
@@ -123,30 +125,27 @@ public class RegisterTutor extends JPanel {
                                 .addContainerGap(56, Short.MAX_VALUE))
         );
 
-        // Cập nhật thời gian kết thúc dựa trên thời gian bắt đầu
         jComboBoxStartTime.addActionListener(e -> {
             String startTime = (String) jComboBoxStartTime.getSelectedItem();
             if (startTime != null) {
                 String[] parts = startTime.split(":");
                 int hour = Integer.parseInt(parts[0]);
                 int minute = Integer.parseInt(parts[1]);
-                hour += 2; // Thêm 2 giờ
+                hour += 2;
                 String endTime = String.format("%02d:%02d", hour, minute);
                 jTextFieldEndTime.setText(endTime);
             }
         });
 
-        // Cập nhật ngày kết thúc dựa trên ngày bắt đầu
         jDateChooserStartDate.addPropertyChangeListener("date", evt -> {
             java.util.Date startDate = jDateChooserStartDate.getDate();
             if (startDate != null) {
                 LocalDate localStartDate = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-                LocalDate localEndDate = localStartDate.plusMonths(2); // Thêm 2 tháng
+                LocalDate localEndDate = localStartDate.plusMonths(2);
                 jDateChooserEndDate.setDate(java.util.Date.from(localEndDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
             }
         });
 
-        // Xử lý nút Đăng ký
         jButtonSubmit.addActionListener(e -> {
             try {
                 String subject = jTextFieldSubject.getText();
@@ -165,7 +164,13 @@ public class RegisterTutor extends JPanel {
                 LocalDate dayStart = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
                 LocalDate dayEnd = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
-                int tutorId = SessionManager.getInstance().getUserId(); // Lấy từ session
+                int userId = SessionManager.getInstance().getUserId(); // Lấy user_id từ session
+                int tutorId = tutorDAO.getTutorIdByUserId(userId); // Lấy tutor_id từ user_id
+
+                if (tutorId == -1) {
+                    JOptionPane.showMessageDialog(this, "Không tìm thấy gia sư tương ứng với tài khoản này!");
+                    return;
+                }
 
                 boolean success = scheduleService.createSchedule(tutorId, subject, timeStart, timeEnd, dayStart, dayEnd);
                 if (success) {

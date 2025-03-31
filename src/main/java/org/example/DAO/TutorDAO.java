@@ -96,4 +96,21 @@ public class TutorDAO {
         } catch (SQLException e) {
             throw new RuntimeException("Error updating tutor: " + e.getMessage(), e);
         }
-}}
+    }
+
+    // Lấy tutor_id dựa trên user_id
+    public int getTutorIdByUserId(int userId) {
+        String query = "SELECT tutor_id FROM tutors WHERE user_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("tutor_id");
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error fetching tutor_id by user_id: " + e.getMessage(), e);
+        }
+        return -1; // Trả về -1 nếu không tìm thấy
+    }
+}

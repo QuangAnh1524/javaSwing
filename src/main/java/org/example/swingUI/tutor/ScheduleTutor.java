@@ -1,10 +1,11 @@
 package org.example.swingUI.tutor;
 
+import org.example.DAO.TutorDAO;
 import org.example.database.DatabaseConnection;
+import org.example.manager.SessionManager;
 import org.example.model.ScheduleRegister;
 import org.example.service.ScheduleService;
 import org.example.DAO.ScheduleDAO;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
@@ -16,18 +17,19 @@ public class ScheduleTutor extends JPanel {
     private JTable table;
     private DefaultTableModel tableModel;
     private ScheduleService scheduleService;
+    private TutorDAO tutorDAO;
 
     public ScheduleTutor() {
         try {
             Connection connection = DatabaseConnection.getConnection();
             ScheduleDAO scheduleDAO = new ScheduleDAO(connection);
             scheduleService = new ScheduleService(scheduleDAO);
+            tutorDAO = new TutorDAO(connection);
         } catch (Exception e) {
             e.printStackTrace();
         }
         setLayout(new BorderLayout());
         initComponents();
-        loadScheduleData(1); // Giả định tutorId = 1
     }
 
     private void initComponents() {
@@ -57,8 +59,14 @@ public class ScheduleTutor extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
     }
 
-    void loadScheduleData(int tutorId) {
-        tableModel.setRowCount(0); // Xóa dữ liệu cũ
+    public void loadScheduleData(int userId) {
+        int tutorId = tutorDAO.getTutorIdByUserId(userId);
+        if (tutorId == -1) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy gia sư tương ứng với tài khoản này!");
+            return;
+        }
+
+        tableModel.setRowCount(0);
         List<ScheduleRegister> schedules = scheduleService.getTutorSchedules(tutorId);
         for (ScheduleRegister schedule : schedules) {
             Object[] row = {

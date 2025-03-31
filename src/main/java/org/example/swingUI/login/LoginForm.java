@@ -18,8 +18,6 @@ public class LoginForm extends JFrame {
     private AuthService auth;
     private StudentService studentService;
 
-    public LoginForm() {}
-
     public LoginForm(AuthService auth, StudentService studentService) {
         this.auth = auth;
         this.studentService = studentService;
@@ -122,18 +120,18 @@ public class LoginForm extends JFrame {
                 userNameField.setText("");
                 passField.setText("");
                 int userId = auth.getUserIdByUsername(username);
-                SessionManager.getInstance().setUserId(userId); // Lưu userId vào session
+                SessionManager.getInstance().setUserId(userId);
                 String role = auth.getRoleByUsername(username);
 
                 if ("tutor".equals(role)) {
-                    dispose(); // Đóng LoginForm
-                    new DashboardTutor().setVisible(true); // Mở DashboardTutor
+                    dispose();
+                    new DashboardTutor(auth, studentService).setVisible(true); // Truyền auth và studentService
                 } else if ("student".equals(role)) {
-                    dispose(); // Đóng LoginForm
-                    new DashboardStudent(this, studentService).setVisible(true); // Mở DashboardStudent
+                    dispose();
+                    new DashboardStudent(this, studentService).setVisible(true);
                 } else {
                     JOptionPane.showMessageDialog(this, "Role không được hỗ trợ!", "Error", JOptionPane.ERROR_MESSAGE);
-                    auth.logout(); // Đăng xuất nếu role không hợp lệ
+                    auth.logout();
                 }
             } else {
                 JOptionPane.showMessageDialog(this, "Invalid username or password!", "Error", JOptionPane.ERROR_MESSAGE);
@@ -147,7 +145,7 @@ public class LoginForm extends JFrame {
                 Connection connection = DatabaseConnection.getConnection();
                 UserDAO userDAO = new UserDAO(connection);
                 AuthService authService = new AuthService(userDAO);
-                StudentService studentService = new StudentService(null);
+                StudentService studentService = new StudentService(null); // Giả định StudentService đã có
                 new LoginForm(authService, studentService).setVisible(true);
             } catch (Exception e) {
                 e.printStackTrace();

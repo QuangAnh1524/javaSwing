@@ -28,7 +28,6 @@ public class ProfileTutor extends JPanel {
         }
         setSize(600, 450);
         initComponents();
-        loadProfileData(1); // Giả định tutorId = 1
     }
 
     private void initComponents() {
@@ -83,7 +82,13 @@ public class ProfileTutor extends JPanel {
 
         jButtonSave.addActionListener(e -> {
             try {
-                int tutorId = SessionManager.getInstance().getUserId(); // Lấy từ session
+                int userId = SessionManager.getInstance().getUserId();
+                int tutorId = tutorDAO.getTutorIdByUserId(userId);
+                if (tutorId == -1) {
+                    JOptionPane.showMessageDialog(this, "Không tìm thấy gia sư tương ứng với tài khoản này!");
+                    return;
+                }
+
                 String name = jTextFieldName.getText();
                 String phone = jTextFieldPhone.getText();
                 int salary = Integer.parseInt(jTextFieldSalary.getText());
@@ -99,7 +104,13 @@ public class ProfileTutor extends JPanel {
         });
     }
 
-    void loadProfileData(int tutorId) {
+    public void loadProfileData(int userId) {
+        int tutorId = tutorDAO.getTutorIdByUserId(userId);
+        if (tutorId == -1) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy gia sư tương ứng với tài khoản này!");
+            return;
+        }
+
         Tutor tutor = tutorDAO.getTutorById(tutorId);
         if (tutor != null) {
             jTextFieldName.setText(tutor.getName());
