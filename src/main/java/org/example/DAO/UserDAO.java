@@ -83,4 +83,19 @@ public class UserDAO {
             throw new RuntimeException("Error deleting user: " + e.getMessage(), e);
         }
     }
+
+    public String getUsernameByUserId(int userId) {
+        String query = "SELECT username FROM users WHERE user_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getString("username");
+            }
+            return null;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

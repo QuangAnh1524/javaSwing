@@ -15,6 +15,10 @@ public class StudentService {
     private UserDAO userDAO;
     private StudentDAO studentDAO;
 
+    public StudentService(StudentDAO studentDAO) {
+        this.studentDao = studentDAO;
+    }
+
     public StudentService(StudentDAO studentDAO, UserDAO userDAO) {
         this.studentDao = studentDAO;
         this.userDAO = userDAO;

@@ -34,7 +34,7 @@ public class TutorDAO {
     // Lấy danh sách tất cả gia sư
     public List<Tutor> getAllTutors() {
         List<Tutor> tutors = new ArrayList<>();
-        String query = "SELECT * FROM tutors"; // Không cần join với users nữa
+        String query = "SELECT * FROM tutors";
         try (PreparedStatement stmt = connection.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
@@ -54,10 +54,21 @@ public class TutorDAO {
 
     // Xóa gia sư
     public boolean deleteTutor(int tutorId) {
-        String query = "DELETE FROM tutors WHERE tutor_id = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setInt(1, tutorId);
-            return stmt.executeUpdate() > 0;
+        String deleteScheduleQuery = "DELETE FROM schedule WHERE tutor_id = ?";
+        String deleteTutorQuery = "DELETE FROM tutors WHERE tutor_id = ?";
+
+        try (PreparedStatement scheduleStmt = connection.prepareStatement(deleteScheduleQuery);
+             PreparedStatement tutorStmt = connection.prepareStatement(deleteTutorQuery)) {
+
+            // Xóa các bản ghi liên quan trong bảng schedule trước
+            scheduleStmt.setInt(1, tutorId);
+            scheduleStmt.executeUpdate();
+
+            // Xóa tutor
+            tutorStmt.setInt(1, tutorId);
+            int rowsAffected = tutorStmt.executeUpdate();
+
+            return rowsAffected > 0;
         } catch (SQLException e) {
             throw new RuntimeException("Error deleting tutor: " + e.getMessage(), e);
         }

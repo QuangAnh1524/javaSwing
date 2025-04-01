@@ -1,9 +1,10 @@
 package org.example.swingUI.admin;
 
+import org.example.manager.SessionManager;
+import org.example.service.AdminService;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class AddNewTutorAccount extends JFrame {
     private JTextField nameField;
@@ -11,20 +12,23 @@ public class AddNewTutorAccount extends JFrame {
     private JPasswordField passwordField;
     private JTextField subjectField;
     private JButton submitButton;
+    private AdminService adminService;
 
-    public AddNewTutorAccount() {
+    public AddNewTutorAccount(AdminService adminService) {
+        this.adminService = adminService;
         setTitle("Thêm mới tài khoản gia sư");
         setSize(400, 300);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
+        initComponents();
+    }
 
-        // Create a main panel with GridBagLayout
+    private void initComponents() {
         JPanel mainPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Create the title
         JLabel titleLabel = new JLabel("Thêm mới tài khoản gia sư");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
         gbc.gridx = 0;
@@ -36,43 +40,33 @@ public class AddNewTutorAccount extends JFrame {
         gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.WEST;
 
-        // Create form labels and fields
         gbc.gridy = 1;
-        JLabel nameLabel = new JLabel("Tên gia sư:");
-        mainPanel.add(nameLabel, gbc);
-
+        mainPanel.add(new JLabel("Tên gia sư:"), gbc);
         gbc.gridx = 1;
         nameField = new JTextField(20);
         mainPanel.add(nameField, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 2;
-        JLabel userNameLabel = new JLabel("User Name:");
-        mainPanel.add(userNameLabel, gbc);
-
+        mainPanel.add(new JLabel("User Name:"), gbc);
         gbc.gridx = 1;
         userNameField = new JTextField(20);
         mainPanel.add(userNameField, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 3;
-        JLabel passwordLabel = new JLabel("Password:");
-        mainPanel.add(passwordLabel, gbc);
-
+        mainPanel.add(new JLabel("Password:"), gbc);
         gbc.gridx = 1;
         passwordField = new JPasswordField(20);
         mainPanel.add(passwordField, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 4;
-        JLabel subjectLabel = new JLabel("Môn đăng kí dạy:");
-        mainPanel.add(subjectLabel, gbc);
-
+        mainPanel.add(new JLabel("Môn đăng kí dạy:"), gbc);
         gbc.gridx = 1;
         subjectField = new JTextField(20);
         mainPanel.add(subjectField, gbc);
 
-        // Create the submit button
         gbc.gridx = 0;
         gbc.gridy = 5;
         gbc.gridwidth = 2;
@@ -80,35 +74,34 @@ public class AddNewTutorAccount extends JFrame {
         submitButton = new JButton("Xác nhận tạo mới");
         mainPanel.add(submitButton, gbc);
 
-        // Set layout and add components
         setLayout(new BorderLayout());
         add(mainPanel, BorderLayout.CENTER);
 
-        // Add action listener for the submit button
-        submitButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Handle the submit button click event here
-                String name = nameField.getText();
-                String userName = userNameField.getText();
-                String password = new String(passwordField.getPassword());
-                String subject = subjectField.getText();
+        submitButton.addActionListener(e -> handleSubmit());
+    }
 
-                // Perform form validation and data processing here
-                if (validateForm(name, userName, password, subject)) {
-                    JOptionPane.showMessageDialog(null, "Tài khoản gia sư mới đã được tạo thành công!");
-                    // Clear form fields
-                    clearForm();
+    private void handleSubmit() {
+        String name = nameField.getText().trim();
+        String username = userNameField.getText().trim();
+        String password = new String(passwordField.getPassword()).trim();
+        String subject = subjectField.getText().trim();
+        String adminUsername = adminService.getUsernameByUserId(SessionManager.getInstance().getUserId());
 
-                } else {
-                    JOptionPane.showMessageDialog(null, "Vui lòng nhập đầy đủ thông tin!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-                }
+        if (validateForm(name, username, password, subject)) {
+            boolean success = adminService.createTutorAccount(adminUsername, username, password, name, "0123456789", 1000000);
+            if (success) {
+                JOptionPane.showMessageDialog(this, "Tạo tài khoản gia sư thành công!");
+                clearForm();
+                dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, "Tạo tài khoản thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
-        });
+        } else {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private boolean validateForm(String name, String userName, String password, String subject) {
-        // Simple form validation
         return !name.isEmpty() && !userName.isEmpty() && !password.isEmpty() && !subject.isEmpty();
     }
 
@@ -117,14 +110,5 @@ public class AddNewTutorAccount extends JFrame {
         userNameField.setText("");
         passwordField.setText("");
         subjectField.setText("");
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new AddNewTutorAccount().setVisible(true);
-            }
-        });
     }
 }

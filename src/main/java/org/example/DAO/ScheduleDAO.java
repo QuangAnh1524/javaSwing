@@ -73,9 +73,10 @@ public class ScheduleDAO {
     public List<ScheduleRegister> getTutorSchedules(int tutorId)  {
         List<ScheduleRegister> schedules = new ArrayList<>();
         String query = "SELECT s.schedule_id, s.tutor_id, s.subject, s.time_start, s.time_end, " +
-                "s.day_start, s.day_end, t.name AS tutor_name, t.phone_number, t.salary " +
+                "s.day_start, s.day_end, st.name AS tutor_name, t.phone_number, t.salary " +
                 "FROM schedule s " +
                 "JOIN tutors t ON s.tutor_id = t.tutor_id " +
+                "JOIN students st ON st.student_id = s.student_id " +
                 "WHERE s.tutor_id = ?";
 
         try (PreparedStatement statement = connection.prepareStatement(query)) {
@@ -189,4 +190,24 @@ public class ScheduleDAO {
         }
     }
 
+    public List<ScheduleRegister> getTutorSchedulesByName(String tutorName)  {
+        List<ScheduleRegister> schedules = new ArrayList<>();
+        String query = "SELECT s.schedule_id, s.tutor_id, s.subject, s.time_start, s.time_end, " +
+                "s.day_start, s.day_end, t.name AS tutor_name, t.phone_number, t.salary " +
+                "FROM schedule s " +
+                "JOIN tutors t ON s.tutor_id = t.tutor_id " +
+                "WHERE t.name LIKE ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, "%" + tutorName + "%");
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    ScheduleRegister schedule = mapResultSetToScheduleRegister(resultSet);
+                    schedules.add(schedule);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error fetching tutor schedules: " + e.getMessage(), e);
+        }
+        return schedules;
+    }
 }

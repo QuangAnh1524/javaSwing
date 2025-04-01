@@ -1,5 +1,7 @@
 package org.example.swingUI.admin;
 
+import org.example.model.Tutor;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -11,7 +13,7 @@ public class TutorDetailForm extends JFrame {
     private JTextField salaryField;
     private JButton closeButton;
 
-    public TutorDetailForm(String name, String userName, String phone, String subject, String salary) {
+    public TutorDetailForm(Tutor tutor) {
         setTitle("Chi tiết thông tin gia sư");
         setSize(400, 300);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -42,7 +44,8 @@ public class TutorDetailForm extends JFrame {
 
         gbc.gridx = 1;
         nameField = new JTextField(20);
-        nameField.setText(name);
+        nameField.setText(tutor.getName());
+        nameField.setEditable(false); // Không cho chỉnh sửa
         mainPanel.add(nameField, gbc);
 
         gbc.gridx = 0;
@@ -52,7 +55,8 @@ public class TutorDetailForm extends JFrame {
 
         gbc.gridx = 1;
         userNameField = new JTextField(20);
-        userNameField.setText(userName);
+        userNameField.setText("N/A"); // Sẽ cập nhật sau khi lấy từ AdminService
+        userNameField.setEditable(false);
         mainPanel.add(userNameField, gbc);
 
         gbc.gridx = 0;
@@ -62,7 +66,8 @@ public class TutorDetailForm extends JFrame {
 
         gbc.gridx = 1;
         phoneField = new JTextField(20);
-        phoneField.setText(phone);
+        phoneField.setText(tutor.getPhoneNumber());
+        phoneField.setEditable(false);
         mainPanel.add(phoneField, gbc);
 
         gbc.gridx = 0;
@@ -72,7 +77,8 @@ public class TutorDetailForm extends JFrame {
 
         gbc.gridx = 1;
         subjectField = new JTextField(20);
-        subjectField.setText(subject);
+        subjectField.setText("N/A"); // Cần lấy từ SubjectTutor nếu có
+        subjectField.setEditable(false);
         mainPanel.add(subjectField, gbc);
 
         gbc.gridx = 0;
@@ -82,7 +88,8 @@ public class TutorDetailForm extends JFrame {
 
         gbc.gridx = 1;
         salaryField = new JTextField(20);
-        salaryField.setText(salary);
+        salaryField.setText(String.valueOf(tutor.getSalary()));
+        salaryField.setEditable(false);
         mainPanel.add(salaryField, gbc);
 
         // Create the close button
@@ -99,9 +106,5 @@ public class TutorDetailForm extends JFrame {
 
         // Add action listener for the close button
         closeButton.addActionListener(e -> dispose());
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new TutorDetailForm("Nguyễn Khắc Minh", "minhnguyen2712", "0327593620", "Toán", "1000000").setVisible(true));
     }
 }

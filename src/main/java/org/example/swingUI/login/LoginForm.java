@@ -5,8 +5,9 @@ import org.example.DAO.UserDAO;
 import org.example.database.DatabaseConnection;
 import org.example.manager.SessionManager;
 import org.example.service.AuthService;
-import org.example.service.StudentRegistrationService;
 import org.example.service.StudentService;
+import org.example.swingUI.admin.AdminDashboard;
+import org.example.swingUI.register.RegisterForm;
 import org.example.swingUI.student.DashboardStudent;
 import org.example.swingUI.tutor.DashboardTutor;
 
@@ -19,8 +20,7 @@ public class LoginForm extends JFrame {
     private JPasswordField passField;
     private AuthService auth;
     private StudentService studentService;
-    private UserDAO userDAO;
-    private StudentDAO studentDAO;
+
 
     public LoginForm(AuthService auth, StudentService studentService) {
         this.auth = auth;
@@ -108,24 +108,22 @@ public class LoginForm extends JFrame {
         loginButton.setFont(new Font("Arial", Font.BOLD, 14));
         rightPanel.add(loginButton);
 
+        // Button Register
+        JButton registerButton = new JButton("REGISTER");
+        registerButton.setBounds(80, 310, 270, 40);
+        registerButton.setBackground(new Color(0, 153, 76));
+        registerButton.setForeground(Color.WHITE);
+        registerButton.setFont(new Font("Arial", Font.BOLD, 14));
+        rightPanel.add(registerButton);
+
         // ActionListener for login button
         loginButton.addActionListener(e -> handleLogin());
-    }
 
-    private void handleRegisterFromConsole(String username, String password, String name, int age,
-                                           String grade, String phone, String email) {
-        StudentRegistrationService regService = new StudentRegistrationService(userDAO, studentDAO);
-        try {
-            boolean success = regService.registerStudent(username, password, name, age, grade, phone, email);
-            if (success) {
-                JOptionPane.showMessageDialog(this, "Đăng ký thành công! Vui lòng đăng nhập.");
-            } else {
-                JOptionPane.showMessageDialog(this, "Đăng ký thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-            }
-        } catch (IllegalArgumentException e) {
-            JOptionPane.showMessageDialog(this, e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
-        regService.closeConnection();
+        // ActionListener for register button
+        registerButton.addActionListener(e -> {
+            dispose();
+            new RegisterForm(auth, studentService).setVisible(true);
+        });
     }
 
     private void handleLogin() {
@@ -143,19 +141,32 @@ public class LoginForm extends JFrame {
                 SessionManager.getInstance().setUserId(userId);
                 String role = auth.getRoleByUsername(username);
 
+                dispose();
                 if ("tutor".equals(role)) {
-                    dispose();
                     new DashboardTutor(auth, studentService).setVisible(true);
                 } else if ("student".equals(role)) {
-                    dispose();
                     new DashboardStudent(this, studentService).setVisible(true);
-                } else {
-                    JOptionPane.showMessageDialog(this, "Role không được hỗ trợ!", "Error", JOptionPane.ERROR_MESSAGE);
-                    auth.logout();
+                } else if ("admin".equals(role)) {
+                    new AdminDashboard().setVisible(true);
                 }
             } else {
                 JOptionPane.showMessageDialog(this, "Invalid username or password!", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            try {
+                Connection connection = DatabaseConnection.getConnection();
+                UserDAO userDAO = new UserDAO(connection);
+                StudentDAO studentDAO = new StudentDAO(connection);
+                AuthService authService = new AuthService(userDAO);
+                StudentService studentService = new StudentService(studentDAO);
+                new LoginForm(authService, studentService).setVisible(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 }

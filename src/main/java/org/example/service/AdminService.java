@@ -54,11 +54,11 @@ public class AdminService {
         return false;
     }
 
-    public List<Tutor> getAllTutors(String adminUsername) {
+    public List<Tutor> getAllTutors() {
         return tutorDAO.getAllTutors();
     }
 
-    public boolean deleteTutor(String adminUsername, int tutorId) {
+    public boolean deleteTutor(int tutorId) {
         Tutor tutor = tutorDAO.getTutorById(tutorId);
         if (tutor != null) {
             boolean deletedFromTutors = tutorDAO.deleteTutor(tutorId);
@@ -70,11 +70,27 @@ public class AdminService {
     }
 
     // Quản lý lịch học
-    public List<ScheduleRegister> getAllSchedules(String adminUsername) {
+    public List<ScheduleRegister> getAllSchedules() {
         return scheduleDAO.getAllSchedules();
     }
 
     public boolean deleteSchedule(String adminUsername, int scheduleId) {
         return scheduleDAO.deleteSchedule(scheduleId);
     }
+
+    // Thêm phương thức mới để lấy username từ userId
+    public String getUsernameByUserId(int userId) {
+        return userDAO.getUsernameByUserId(userId);
+    }
+
+    // Thêm phương thức để cập nhật gia sư
+    public boolean updateTutor(int tutorId, String name, String phoneNumber, int salary) {
+        return tutorDAO.updateTutor(tutorId, name, phoneNumber, salary);
+    }
+
+    // tim kiem gia su theo ten
+    public List<ScheduleRegister> getTutorSchedulesByName(String tutorName){
+        return scheduleDAO.getTutorSchedulesByName(tutorName);
+    }
+
 }

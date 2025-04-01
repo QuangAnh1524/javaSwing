@@ -1,109 +1,134 @@
 package org.example.swingUI.admin;
 
+import org.example.DAO.ScheduleDAO;
+import org.example.DAO.StudentDAO;
+import org.example.DAO.TutorDAO;
+import org.example.DAO.UserDAO;
+import org.example.database.DatabaseConnection;
+import org.example.manager.SessionManager;
+import org.example.model.Tutor;
+import org.example.service.AdminService;
+import org.example.service.AuthService;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableCellEditor;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.util.List;
 
 public class AdminSalaryManagement extends JPanel {
     private JTable salaryTable;
     private DefaultTableModel tableModel;
     private JTextField searchField;
     private JButton searchButton;
-    private JButton exportButton;
+    private AdminService adminService;
 
     public AdminSalaryManagement() {
+        initServices();
         setLayout(new BorderLayout());
+        initComponents();
+    }
 
-        // Create a main panel with BorderLayout
+    private void initServices() {
+        try {
+            Connection connection = DatabaseConnection.getConnection();
+            UserDAO userDAO = new UserDAO(connection);
+            StudentDAO studentDAO = new StudentDAO(connection);
+            TutorDAO tutorDAO = new TutorDAO(connection);
+            ScheduleDAO scheduleDAO = new ScheduleDAO(connection);
+            AuthService authService = new AuthService(userDAO);
+            this.adminService = new AdminService(userDAO, studentDAO, tutorDAO, scheduleDAO, authService);
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Không thể kết nối cơ sở dữ liệu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void initComponents() {
         JPanel mainPanel = new JPanel(new BorderLayout());
-
-        // Create a panel for the title and search bar
         JPanel titlePanel = new JPanel(new BorderLayout());
 
-        // Create the title
         JLabel titleLabel = new JLabel("Bảng lương tháng", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         titlePanel.add(titleLabel, BorderLayout.CENTER);
 
-        mainPanel.add(titlePanel, BorderLayout.NORTH);
-
-        // Create a panel for the export button and search bar
-        JPanel actionPanel = new JPanel(new BorderLayout());
-
-        // Create the export button panel
-        JPanel exportPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        exportButton = new JButton("Xuất file");
-        exportPanel.add(exportButton);
-        actionPanel.add(exportPanel, BorderLayout.WEST);
-
-        // Create the search panel
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         searchField = new JTextField(20);
         searchButton = new JButton("Tìm kiếm");
         searchPanel.add(new JLabel("Tìm kiếm:"));
         searchPanel.add(searchField);
         searchPanel.add(searchButton);
-        actionPanel.add(searchPanel, BorderLayout.EAST);
+        titlePanel.add(searchPanel, BorderLayout.EAST);
 
-        mainPanel.add(actionPanel, BorderLayout.SOUTH);
+        mainPanel.add(titlePanel, BorderLayout.NORTH);
 
-        // Create table model with column names
-        String[] columnNames = {"STT", "Tên gia sư", "Môn dạy", "Số lượng lớp", "Lương / lớp", "Tổng lương"};
-        tableModel = new DefaultTableModel(columnNames, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
+        String[] columnNames = {"STT", "Tên gia sư", "Môn dạy", "Số lượng lớp", "Lương / lớp", "Tổng lương", "Hành Động"};
+        tableModel = new DefaultTableModel(columnNames, 0);
         salaryTable = new JTable(tableModel);
-
-        // Set row height
         salaryTable.setRowHeight(40);
+        salaryTable.getColumnModel().getColumn(0).setPreferredWidth(50);
+        salaryTable.getColumnModel().getColumn(1).setPreferredWidth(150);
+        salaryTable.getColumnModel().getColumn(2).setPreferredWidth(100);
+        salaryTable.getColumnModel().getColumn(3).setPreferredWidth(100);
+        salaryTable.getColumnModel().getColumn(4).setPreferredWidth(100);
+        salaryTable.getColumnModel().getColumn(5).setPreferredWidth(150);
+        salaryTable.getColumnModel().getColumn(6).setPreferredWidth(150);
 
-        // Set column widths
-        salaryTable.getColumnModel().getColumn(0).setPreferredWidth(50);  // STT
-        salaryTable.getColumnModel().getColumn(1).setPreferredWidth(150); // Tên gia sư
-        salaryTable.getColumnModel().getColumn(2).setPreferredWidth(100); // Môn dạy
-        salaryTable.getColumnModel().getColumn(3).setPreferredWidth(100); // Số lượng lớp
-        salaryTable.getColumnModel().getColumn(4).setPreferredWidth(100); // Lương / lớp
-        salaryTable.getColumnModel().getColumn(5).setPreferredWidth(150); // Tổng lương
-
-        // Add some sample data
-        addSampleData();
-
-        // Add the table to a scroll pane
         JScrollPane scrollPane = new JScrollPane(salaryTable);
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
-        // Set layout and add components
+        salaryTable.getColumn("Hành Động").setCellRenderer(new ButtonRenderer());
+        salaryTable.getColumn("Hành Động").setCellEditor(new ButtonEditor(new JCheckBox()));
+
         add(mainPanel, BorderLayout.CENTER);
 
-        // Add action listener for the export button
-        exportButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Handle the export button click event here
-                exportTableData();
-            }
-        });
     }
 
-    private void addSampleData() {
-        Object[][] data = {
-                {"1", "Nguyen Van A", "Toán", "3", "200000", "600000"},
-                {"2", "Tran Thi B", "Lý", "2", "250000", "500000"},
-                {"3", "Le Van C", "Hóa", "4", "150000", "600000"}
-        };
 
-        for (Object[] row : data) {
-            tableModel.addRow(row);
+    class ButtonRenderer extends JPanel implements TableCellRenderer {
+        private final JButton approveButton = new JButton("Duyệt");
+
+        public ButtonRenderer() {
+            setLayout(new FlowLayout(FlowLayout.CENTER));
+            add(approveButton);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            return this;
         }
     }
 
-    private void exportTableData() {
-        // Implement export logic here
-        JOptionPane.showMessageDialog(this, "Exporting table data...");
+    class ButtonEditor extends DefaultCellEditor {
+        private final JPanel panel = new JPanel();
+        private final JButton approveButton = new JButton("Duyệt");
+
+        public ButtonEditor(JCheckBox checkBox) {
+            super(checkBox);
+            panel.setLayout(new FlowLayout(FlowLayout.CENTER));
+            panel.add(approveButton);
+
+            approveButton.addActionListener(e -> {
+                int selectedRow = salaryTable.getSelectedRow();
+                if (selectedRow != -1) {
+                    JOptionPane.showMessageDialog(null, "Đã thanh toán lương cho gia sư!");
+                    approveButton.setText("Đã thanh toán");
+                    approveButton.setEnabled(false);
+                }
+                fireEditingStopped();
+            });
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            return panel;
+        }
+
+        @Override
+        public Object getCellEditorValue() {
+            return "";
+        }
     }
 }
