@@ -138,18 +138,4 @@ public class LoginForm extends JFrame {
             }
         }
     }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            try {
-                Connection connection = DatabaseConnection.getConnection();
-                UserDAO userDAO = new UserDAO(connection);
-                AuthService authService = new AuthService(userDAO);
-                StudentService studentService = new StudentService(null); // Giả định StudentService đã có
-                new LoginForm(authService, studentService).setVisible(true);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-    }
 }

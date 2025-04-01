@@ -16,8 +16,6 @@ public class StudentService {
         this.studentDao = studentDao;
     }
 
-    public StudentService(StudentDAO studentDAO, ScheduleService scheduleService) {
-    }
 
     // lay lich da dang ky cua hoc sinh
     public List<ScheduleRegister> getScheduleStudent(int student_id){

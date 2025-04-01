@@ -135,8 +135,7 @@ public class ProfileStudent extends JPanel {
     }
 
     private void getProfile(){
-        Student student = new Student();
-        student = studentService.getProfileStudent(SessionManager.getInstance().getUserId());
+        Student student = studentService.getProfileStudent(SessionManager.getInstance().getUserId());
         txtName.setText(student.getName());
         txtAge.setText(String.valueOf(student.getAge()));
         txtGrade.setText(student.getGrade());

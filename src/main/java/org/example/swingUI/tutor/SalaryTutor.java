@@ -1,24 +1,34 @@
 package org.example.swingUI.tutor;
 
 
+import org.example.DAO.TutorDAO;
 import org.example.database.DatabaseConnection;
+import org.example.manager.SessionManager;
+import org.example.model.ScheduleTutorSalary;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.sql.Connection;
+import java.text.NumberFormat;
+import java.util.List;
+import java.util.Locale;
 
 public class SalaryTutor extends JPanel {
     private JLabel jLabelTitle;
     private JTable jTable;
     private JScrollPane jScrollPane;
     private DefaultTableModel tableModel;
+    private TutorDAO tutorDAO;
+
+    private int sumSalary;
 
     public SalaryTutor() {
         try {
             Connection connection = DatabaseConnection.getConnection();
-            // Nếu có DAO/Service cho lương, khởi tạo ở đây
+            tutorDAO = new TutorDAO(connection);
+            sumSalary = 0;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -33,7 +43,7 @@ public class SalaryTutor extends JPanel {
         jLabelTitle.setForeground(new Color(70, 130, 180));
         jLabelTitle.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
-        String[] columnNames = {"Tên học viên", "Môn", "Thứ", "Số tiền / buổi"};
+        String[] columnNames = {"Tên học viên", "Môn", "Số tiền"};
         tableModel = new DefaultTableModel(columnNames, 0);
         jTable = new JTable(tableModel);
         JTableHeader jTableHeader = jTable.getTableHeader();
@@ -63,16 +73,18 @@ public class SalaryTutor extends JPanel {
                                 .addContainerGap())
         );
 
-        addSampleData(); // Giữ nguyên dữ liệu mẫu
+        addSampleData();
     }
 
     private void addSampleData() {
-        String[][] data = {
-                {"Nguyễn Văn A", "Toán", "Thứ 2", "500,000 VND"},
-                {"Trần Thị B", "Văn", "Thứ 3", "400,000 VND"}
-        };
-        for (String[] row : data) {
-            tableModel.addRow(row);
+        int tutorId = tutorDAO.getTutorIdByUserId(SessionManager.getInstance().getUserId());
+        NumberFormat currencyFormat = NumberFormat.getInstance(new Locale("vi", "VN"));
+        List<ScheduleTutorSalary> data = tutorDAO.getTutorSalary(tutorId);
+        for (ScheduleTutorSalary row : data) {
+            tableModel.addRow(new Object[]{row.getStudentName(), row.getSubjectName(), currencyFormat.format(row.getSalary()) + " VND"});
+            sumSalary += (row.getSalary()*16);
         }
+        String sum = currencyFormat.format(sumSalary) + " VND";
+        tableModel.addRow(new String[]{"", "", sum});
     }
 }

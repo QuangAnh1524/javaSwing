@@ -68,9 +68,9 @@ public class ScheduleDAO {
     }
 
     /**
-     * Lấy danh sách lịch học của một gia sư
+     * Lấy danh sách lịch day của một gia sư
      */
-    public List<ScheduleRegister> getTutorSchedules(int tutorId) {
+    public List<ScheduleRegister> getTutorSchedules(int tutorId)  {
         List<ScheduleRegister> schedules = new ArrayList<>();
         String query = "SELECT s.schedule_id, s.tutor_id, s.subject, s.time_start, s.time_end, " +
                 "s.day_start, s.day_end, t.name AS tutor_name, t.phone_number, t.salary " +
@@ -188,4 +188,5 @@ public class ScheduleDAO {
             throw new RuntimeException("Error deleting schedule: " + e.getMessage(), e);
         }
     }
+
 }
