@@ -19,6 +19,22 @@ public class StudentDAO {
     public StudentDAO(Connection connection) {
         this.connection = connection;
     }
+    //tao hoc sinh moi
+    public boolean createStudent(int userId, String name, int age, String grade, String phoneNumber, String email) {
+        String query = "INSERT INTO students (user_id, name, age, grade, phone_number, email) VALUES (?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, userId);
+            statement.setString(2, name);
+            statement.setInt(3, age);
+            statement.setString(4, grade);
+            statement.setString(5, phoneNumber);
+            statement.setString(6, email);
+
+            return statement.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException("Lỗi khi thêm học sinh: " + e.getMessage(), e);
+        }
+    }
 
     //lay tat ca hoc sinh
     public List<Student> getAllStudents() {
@@ -232,10 +248,4 @@ public class StudentDAO {
         }
         return schedule;
     }
-
-
-
-
-
-
 }

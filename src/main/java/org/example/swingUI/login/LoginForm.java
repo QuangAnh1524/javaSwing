@@ -1,9 +1,11 @@
 package org.example.swingUI.login;
 
+import org.example.DAO.StudentDAO;
 import org.example.DAO.UserDAO;
 import org.example.database.DatabaseConnection;
 import org.example.manager.SessionManager;
 import org.example.service.AuthService;
+import org.example.service.StudentRegistrationService;
 import org.example.service.StudentService;
 import org.example.swingUI.student.DashboardStudent;
 import org.example.swingUI.tutor.DashboardTutor;
@@ -17,6 +19,8 @@ public class LoginForm extends JFrame {
     private JPasswordField passField;
     private AuthService auth;
     private StudentService studentService;
+    private UserDAO userDAO;
+    private StudentDAO studentDAO;
 
     public LoginForm(AuthService auth, StudentService studentService) {
         this.auth = auth;
@@ -108,6 +112,22 @@ public class LoginForm extends JFrame {
         loginButton.addActionListener(e -> handleLogin());
     }
 
+    private void handleRegisterFromConsole(String username, String password, String name, int age,
+                                           String grade, String phone, String email) {
+        StudentRegistrationService regService = new StudentRegistrationService(userDAO, studentDAO);
+        try {
+            boolean success = regService.registerStudent(username, password, name, age, grade, phone, email);
+            if (success) {
+                JOptionPane.showMessageDialog(this, "Đăng ký thành công! Vui lòng đăng nhập.");
+            } else {
+                JOptionPane.showMessageDialog(this, "Đăng ký thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+        regService.closeConnection();
+    }
+
     private void handleLogin() {
         String username = userNameField.getText().trim();
         String password = new String(passField.getPassword()).trim();
@@ -125,7 +145,7 @@ public class LoginForm extends JFrame {
 
                 if ("tutor".equals(role)) {
                     dispose();
-                    new DashboardTutor(auth, studentService).setVisible(true); // Truyền auth và studentService
+                    new DashboardTutor(auth, studentService).setVisible(true);
                 } else if ("student".equals(role)) {
                     dispose();
                     new DashboardStudent(this, studentService).setVisible(true);

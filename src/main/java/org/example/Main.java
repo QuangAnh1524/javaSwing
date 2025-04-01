@@ -21,7 +21,7 @@ public class Main {
         StudentDAO studentDAO = new StudentDAO(conn);
 
         AuthService authService = new AuthService(userDAO);
-        StudentService studentService = new StudentService(studentDAO);
+        StudentService studentService = new StudentService(studentDAO, userDAO);
         LoginForm loginForm = new LoginForm(authService, studentService);
         loginForm.setVisible(true);
     }

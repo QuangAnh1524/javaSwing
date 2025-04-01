@@ -26,21 +26,13 @@ public class AdminService {
         this.authService = authService;
     }
 
-    // Kiểm tra quyền Admin
-    private void checkAdminPermission(String username) {
-        if (!authService.isAdmin(username)) {
-            throw new SecurityException("Only admin can perform this action");
-        }
-    }
 
     // Quản lý học sinh
     public List<Student> getAllStudents(String adminUsername) {
-        checkAdminPermission(adminUsername);
         return studentDAO.getAllStudents();
     }
 
     public boolean deleteStudent(String adminUsername, int studentId) {
-        checkAdminPermission(adminUsername);
         Student student = studentDAO.getProfileStudent(studentId);
         if (student != null) {
             boolean deletedFromStudents = studentDAO.deleteStudent(studentId);
@@ -54,7 +46,6 @@ public class AdminService {
     // Quản lý gia sư
     public boolean createTutorAccount(String adminUsername, String username, String password,
                                       String name, String phoneNumber, int salary) {
-        checkAdminPermission(adminUsername);
         boolean userCreated = userDAO.createUser(username, password, "tutor");
         if (userCreated) {
             int userId = userDAO.getUserIdByUsername(username);
@@ -64,12 +55,10 @@ public class AdminService {
     }
 
     public List<Tutor> getAllTutors(String adminUsername) {
-        checkAdminPermission(adminUsername);
         return tutorDAO.getAllTutors();
     }
 
     public boolean deleteTutor(String adminUsername, int tutorId) {
-        checkAdminPermission(adminUsername);
         Tutor tutor = tutorDAO.getTutorById(tutorId);
         if (tutor != null) {
             boolean deletedFromTutors = tutorDAO.deleteTutor(tutorId);
@@ -82,12 +71,10 @@ public class AdminService {
 
     // Quản lý lịch học
     public List<ScheduleRegister> getAllSchedules(String adminUsername) {
-        checkAdminPermission(adminUsername);
         return scheduleDAO.getAllSchedules();
     }
 
     public boolean deleteSchedule(String adminUsername, int scheduleId) {
-        checkAdminPermission(adminUsername);
         return scheduleDAO.deleteSchedule(scheduleId);
     }
 }
