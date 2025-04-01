@@ -1,5 +1,7 @@
 package org.example.swingUI.login;
 
+import org.example.DAO.UserDAO;
+import org.example.database.DatabaseConnection;
 import org.example.manager.SessionManager;
 import org.example.service.AuthService;
 import org.example.service.StudentService;
@@ -8,12 +10,12 @@ import org.example.swingUI.tutor.DashboardTutor;
 
 import javax.swing.*;
 import java.awt.*;
+import java.sql.Connection;
 
 public class LoginForm extends JFrame {
     private JTextField userNameField;
     private JPasswordField passField;
     private AuthService auth;
-
     private StudentService studentService;
 
     public LoginForm(AuthService auth, StudentService studentService) {
@@ -102,10 +104,8 @@ public class LoginForm extends JFrame {
         loginButton.setFont(new Font("Arial", Font.BOLD, 14));
         rightPanel.add(loginButton);
 
-        //ActionListener 4 login button
+        // ActionListener for login button
         loginButton.addActionListener(e -> handleLogin());
-
-
     }
 
     private void handleLogin() {
@@ -114,26 +114,42 @@ public class LoginForm extends JFrame {
 
         if (username.isEmpty() || password.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Please enter both username and password!", "Error", JOptionPane.ERROR_MESSAGE);
-        }
-        else {
+        } else {
             boolean isValid = auth.login(username, password);
             if (isValid) {
                 userNameField.setText("");
                 passField.setText("");
                 int userId = auth.getUserIdByUsername(username);
                 SessionManager.getInstance().setUserId(userId);
-                if(auth.getRoleByUsername(username).equals("tutor")){
-                    new DashboardTutor().setVisible(true);
-                }
-                else {
+                String role = auth.getRoleByUsername(username);
+
+                if ("tutor".equals(role)) {
+                    dispose();
+                    new DashboardTutor(auth, studentService).setVisible(true); // Truyền auth và studentService
+                } else if ("student".equals(role)) {
+                    dispose();
                     new DashboardStudent(this, studentService).setVisible(true);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Role không được hỗ trợ!", "Error", JOptionPane.ERROR_MESSAGE);
+                    auth.logout();
                 }
-                dispose();
             } else {
                 JOptionPane.showMessageDialog(this, "Invalid username or password!", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
 
-
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            try {
+                Connection connection = DatabaseConnection.getConnection();
+                UserDAO userDAO = new UserDAO(connection);
+                AuthService authService = new AuthService(userDAO);
+                StudentService studentService = new StudentService(null); // Giả định StudentService đã có
+                new LoginForm(authService, studentService).setVisible(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
 }
