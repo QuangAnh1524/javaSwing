@@ -1,5 +1,6 @@
 package org.example.DAO;
 
+import org.example.model.ScheduleTutorSalary;
 import org.example.model.Tutor;
 
 import java.sql.Connection;
@@ -113,4 +114,33 @@ public class TutorDAO {
         }
         return -1; // Trả về -1 nếu không tìm thấy
     }
+
+    public List<ScheduleTutorSalary> getTutorSalary(int tutorId){
+        List<ScheduleTutorSalary> list = new ArrayList<>();
+        String query = "SELECT " +
+                "s.name," +
+                "sch.subject, " +
+                "t.salary " +
+                "FROM schedule sch " +
+                "INNER JOIN students s ON sch.student_id = s.student_id " +
+                "INNER JOIN tutors t ON sch.tutor_id = t.tutor_id " +
+                "WHERE t.tutor_id = ?;";
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setInt(1, tutorId);
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()){
+                ScheduleTutorSalary salary = new ScheduleTutorSalary();
+                salary.setStudentName(rs.getString("name"));
+                salary.setSalary(rs.getInt("salary"));
+                salary.setSubjectName(rs.getString("subject"));
+                list.add(salary);
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+
 }

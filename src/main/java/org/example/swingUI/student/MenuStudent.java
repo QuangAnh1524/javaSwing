@@ -62,7 +62,6 @@ public class MenuStudent extends JPanel {
                     label.setBackground(new Color(102, 153, 255));
                 }
             }
-
             @Override
             public void mouseClicked(MouseEvent e) {
                 if(!label.getText().equals("Đăng xuất")){
