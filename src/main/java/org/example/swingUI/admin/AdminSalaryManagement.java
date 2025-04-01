@@ -41,7 +41,12 @@ public class AdminSalaryManagement extends JPanel {
 
         // Create table model with column names
         String[] columnNames = {"STT", "Tên gia sư", "Môn dạy", "Số lượng lớp", "Lương / lớp", "Tổng lương", "Hành Động"};
-        tableModel = new DefaultTableModel(columnNames, 0);
+        tableModel = new DefaultTableModel(columnNames, 0){
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
         salaryTable = new JTable(tableModel);
 
         // Set row height

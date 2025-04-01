@@ -19,7 +19,12 @@ public class AdminTutorManagement extends JPanel {
 
         // Create table model with column names
         String[] columnNames = {"STT", "Tên tutor", "User Name", "Môn Dạy", "Hành Động"};
-        tableModel = new DefaultTableModel(columnNames, 0);
+        tableModel = new DefaultTableModel(columnNames, 0){
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
         tutorTable = new JTable(tableModel);
 
         // Set row height

@@ -17,7 +17,12 @@ public class AdminStudentManagement extends JPanel {
 
         // Create table model with column names
         String[] columnNames = {"STT", "Schedule_id", "User Name", "Tên sinh viên", "Môn học", "Gia sư"};
-        tableModel = new DefaultTableModel(columnNames, 0);
+        tableModel = new DefaultTableModel(columnNames, 0){
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
         studentTable = new JTable(tableModel);
 
         // Set row height
