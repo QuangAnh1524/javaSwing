@@ -19,7 +19,12 @@ public class AdminTutorManagement extends JPanel {
 
         // Create table model with column names
         String[] columnNames = {"STT", "Tên tutor", "User Name", "Môn Dạy", "Hành Động"};
-        tableModel = new DefaultTableModel(columnNames, 0);
+        tableModel = new DefaultTableModel(columnNames, 0){
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
         tutorTable = new JTable(tableModel);
 
         // Set row height
@@ -93,7 +98,7 @@ public class AdminTutorManagement extends JPanel {
 
     private void addSampleData() {
         Object[][] data = {
-                {"1", "Nguyen Van A", "nguyenvana@gmail.com", "Toán", ""},
+                {"1", "Nguyen Van A", "nguyenvana@gmail.com", "Toán, Lý, Hóa", ""},
                 {"2", "Tran Thi B", "tranthib@gmail.com", "Lý", ""},
                 {"3", "Le Van C", "levanc@gmail.com", "Hóa", ""}
         };

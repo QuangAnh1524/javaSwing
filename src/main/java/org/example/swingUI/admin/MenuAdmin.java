@@ -21,7 +21,7 @@ public class MenuAdmin extends  JPanel{
         grid.gridx = 0;
         grid.fill = GridBagConstraints.HORIZONTAL;
 
-        String[] menuItems = {"Quản lý gia sư", "Thống kê lương"};
+        String[] menuItems = {"Quản lý gia sư", "Quản lý sinh viên", "Thống kê lương"};
 
         int row = 0;
         for (String item : menuItems) {
