@@ -12,7 +12,6 @@ public class DashboardTutor extends JFrame implements MenuListener{
     private RegisterTutor register;
     private SalaryTutor salaryTutor;
 
-
     public DashboardTutor(){
         setSize(800, 450);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);

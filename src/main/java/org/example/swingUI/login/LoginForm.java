@@ -4,6 +4,7 @@ import org.example.manager.SessionManager;
 import org.example.service.AuthService;
 import org.example.service.StudentService;
 import org.example.swingUI.student.DashboardStudent;
+import org.example.swingUI.tutor.DashboardTutor;
 
 import javax.swing.*;
 import java.awt.*;
@@ -122,7 +123,7 @@ public class LoginForm extends JFrame {
                 int userId = auth.getUserIdByUsername(username);
                 SessionManager.getInstance().setUserId(userId);
                 if(auth.getRoleByUsername(username).equals("tutor")){
-
+                    new DashboardTutor().setVisible(true);
                 }
                 else {
                     new DashboardStudent(this, studentService).setVisible(true);

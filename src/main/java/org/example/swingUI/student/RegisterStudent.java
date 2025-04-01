@@ -58,10 +58,6 @@ public class RegisterStudent extends JPanel {
             }
         });
 
-
-
-
-
         add(findPanel, BorderLayout.NORTH);
         add(mainPanel, BorderLayout.CENTER);
         setVisible(true);
