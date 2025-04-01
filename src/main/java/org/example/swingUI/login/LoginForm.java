@@ -5,6 +5,7 @@ import org.example.database.DatabaseConnection;
 import org.example.manager.SessionManager;
 import org.example.service.AuthService;
 import org.example.service.StudentService;
+import org.example.swingUI.admin.AdminDashboard;
 import org.example.swingUI.student.DashboardStudent;
 import org.example.swingUI.tutor.DashboardTutor;
 
@@ -27,7 +28,7 @@ public class LoginForm extends JFrame {
         setLocationRelativeTo(null);
         setLayout(null);
 
-        // Panel left - image screen
+        // Panel trái
         JPanel leftPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -39,14 +40,14 @@ public class LoginForm extends JFrame {
         leftPanel.setBounds(0, 0, 400, 450);
         add(leftPanel);
 
-        // Panel right - form login
+        // Panel phải - form login
         JPanel rightPanel = new JPanel();
         rightPanel.setBounds(400, 0, 400, 450);
         rightPanel.setBackground(new Color(102, 153, 255));
         rightPanel.setLayout(null);
         add(rightPanel);
 
-        // Title "Welcome!"
+        // Label "Welcome"
         JLabel titleLabel = new JLabel("Welcome !");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         titleLabel.setForeground(Color.WHITE);
@@ -66,14 +67,14 @@ public class LoginForm extends JFrame {
         userLabel.setBounds(50, 120, 100, 20);
         rightPanel.add(userLabel);
 
-        // Icon Username
+        // Icon bên cạnh username
         ImageIcon userIcon = new ImageIcon(new ImageIcon("src/main/java/org/example/resources/ic_user.png")
                 .getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH));
         JLabel userIconLabel = new JLabel(userIcon);
         userIconLabel.setBounds(50, 145, 24, 24);
         rightPanel.add(userIconLabel);
 
-        // UsernameField
+        // Truong nhap lieu UsernameField
         userNameField = new JTextField();
         userNameField.setBounds(80, 145, 270, 30);
         rightPanel.add(userNameField);
@@ -84,14 +85,14 @@ public class LoginForm extends JFrame {
         passLabel.setBounds(50, 185, 100, 20);
         rightPanel.add(passLabel);
 
-        // Icon Password
+        // Icon bên cạnh Password
         ImageIcon passIcon = new ImageIcon(new ImageIcon("src/main/java/org/example/resources/ic_password.png")
                 .getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH));
         JLabel passIconLabel = new JLabel(passIcon);
         passIconLabel.setBounds(50, 215, 24, 24);
         rightPanel.add(passIconLabel);
 
-        // PasswordField
+        //Truong nhap lieu  PasswordField
         passField = new JPasswordField();
         passField.setBounds(80, 215, 270, 30);
         rightPanel.add(passField);
@@ -104,7 +105,6 @@ public class LoginForm extends JFrame {
         loginButton.setFont(new Font("Arial", Font.BOLD, 14));
         rightPanel.add(loginButton);
 
-        // ActionListener for login button
         loginButton.addActionListener(e -> handleLogin());
     }
 
@@ -119,19 +119,21 @@ public class LoginForm extends JFrame {
             if (isValid) {
                 userNameField.setText("");
                 passField.setText("");
+                //Luu userId
                 int userId = auth.getUserIdByUsername(username);
                 SessionManager.getInstance().setUserId(userId);
-                String role = auth.getRoleByUsername(username);
 
+                //Lay role va hien thi man hinh
+                String role = auth.getRoleByUsername(username);
                 if ("tutor".equals(role)) {
                     dispose();
                     new DashboardTutor(auth, studentService).setVisible(true); // Truyền auth và studentService
                 } else if ("student".equals(role)) {
                     dispose();
                     new DashboardStudent(this, studentService).setVisible(true);
-                } else {
-                    JOptionPane.showMessageDialog(this, "Role không được hỗ trợ!", "Error", JOptionPane.ERROR_MESSAGE);
-                    auth.logout();
+                }else {
+                    dispose();
+                    new AdminDashboard().setVisible(true);
                 }
             } else {
                 JOptionPane.showMessageDialog(this, "Invalid username or password!", "Error", JOptionPane.ERROR_MESSAGE);

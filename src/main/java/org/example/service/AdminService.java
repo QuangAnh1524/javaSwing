@@ -15,7 +15,6 @@ public class AdminService {
     private final StudentDAO studentDAO;
     private final TutorDAO tutorDAO;
     private final ScheduleDAO scheduleDAO;
-    private final AuthService authService;
 
     public AdminService(UserDAO userDAO, StudentDAO studentDAO, TutorDAO tutorDAO,
                         ScheduleDAO scheduleDAO, AuthService authService) {
@@ -23,38 +22,13 @@ public class AdminService {
         this.studentDAO = studentDAO;
         this.tutorDAO = tutorDAO;
         this.scheduleDAO = scheduleDAO;
-        this.authService = authService;
     }
 
-    // Kiểm tra quyền Admin
-    private void checkAdminPermission(String username) {
-        if (!authService.isAdmin(username)) {
-            throw new SecurityException("Only admin can perform this action");
-        }
-    }
 
-    // Quản lý học sinh
-    public List<Student> getAllStudents(String adminUsername) {
-        checkAdminPermission(adminUsername);
-        return studentDAO.getAllStudents();
-    }
 
-    public boolean deleteStudent(String adminUsername, int studentId) {
-        checkAdminPermission(adminUsername);
-        Student student = studentDAO.getProfileStudent(studentId);
-        if (student != null) {
-            boolean deletedFromStudents = studentDAO.deleteStudent(studentId);
-            if (deletedFromStudents) {
-                return userDAO.deleteUser(student.getUserId());
-            }
-        }
-        return false;
-    }
-
-    // Quản lý gia sư
-    public boolean createTutorAccount(String adminUsername, String username, String password,
+    // tạo mới gia sư
+    public boolean createTutorAccount(String username, String password,
                                       String name, String phoneNumber, int salary) {
-        checkAdminPermission(adminUsername);
         boolean userCreated = userDAO.createUser(username, password, "tutor");
         if (userCreated) {
             int userId = userDAO.getUserIdByUsername(username);
@@ -63,13 +37,14 @@ public class AdminService {
         return false;
     }
 
-    public List<Tutor> getAllTutors(String adminUsername) {
-        checkAdminPermission(adminUsername);
+
+    // lấy tất cả thông tin gia sư
+    public List<Tutor> getAllTutors() {
         return tutorDAO.getAllTutors();
     }
 
-    public boolean deleteTutor(String adminUsername, int tutorId) {
-        checkAdminPermission(adminUsername);
+    // xóa gia su
+    public boolean deleteTutor(int tutorId) {
         Tutor tutor = tutorDAO.getTutorById(tutorId);
         if (tutor != null) {
             boolean deletedFromTutors = tutorDAO.deleteTutor(tutorId);
@@ -81,13 +56,14 @@ public class AdminService {
     }
 
     // Quản lý lịch học
-    public List<ScheduleRegister> getAllSchedules(String adminUsername) {
-        checkAdminPermission(adminUsername);
+    public List<ScheduleRegister> getAllSchedules() {
         return scheduleDAO.getAllSchedules();
     }
 
-    public boolean deleteSchedule(String adminUsername, int scheduleId) {
-        checkAdminPermission(adminUsername);
-        return scheduleDAO.deleteSchedule(scheduleId);
-    }
+    // tim kiem gia su theo ten gia su
+
+    //danh sach lich day cua gia su
+
+    //tim kiem theo username hoc sinh
+
 }
