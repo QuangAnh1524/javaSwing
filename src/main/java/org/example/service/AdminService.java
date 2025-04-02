@@ -58,6 +58,9 @@ public class AdminService {
         return tutorDAO.getAllTutors();
     }
 
+
+
+
     public boolean deleteTutor(int tutorId) {
         Tutor tutor = tutorDAO.getTutorById(tutorId);
         if (tutor != null) {
@@ -67,6 +70,11 @@ public class AdminService {
             }
         }
         return false;
+    }
+
+    // Lấy danh sách lịch học của một gia sư cụ thể
+    public List<ScheduleRegister> getSchedulesByTutorId(int tutorId) {
+        return scheduleDAO.getSchedulesByTutorId(tutorId);
     }
 
     // Quản lý lịch học

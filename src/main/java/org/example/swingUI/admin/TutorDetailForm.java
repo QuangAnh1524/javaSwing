@@ -1,9 +1,13 @@
 package org.example.swingUI.admin;
 
+import org.example.model.ScheduleRegister;
 import org.example.model.Tutor;
+import org.example.service.AdminService;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class TutorDetailForm extends JFrame {
     private JTextField nameField;
@@ -12,20 +16,23 @@ public class TutorDetailForm extends JFrame {
     private JTextField subjectField;
     private JTextField salaryField;
     private JButton closeButton;
+    private AdminService adminService;
 
-    public TutorDetailForm(Tutor tutor) {
+    // Constructor nhận Tutor và AdminService để lấy thông tin username và môn học
+    public TutorDetailForm(Tutor tutor, AdminService adminService) {
+        this.adminService = adminService;
         setTitle("Chi tiết thông tin gia sư");
         setSize(400, 300);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Create a main panel with GridBagLayout
+        // Tạo panel chính với GridBagLayout
         JPanel mainPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Create the title
+        // Tạo tiêu đề
         JLabel titleLabel = new JLabel("Chi tiết thông tin gia sư");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
         gbc.gridx = 0;
@@ -37,7 +44,7 @@ public class TutorDetailForm extends JFrame {
         gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.WEST;
 
-        // Create form labels and fields
+        // Tạo nhãn và trường nhập liệu cho họ tên
         gbc.gridy = 1;
         JLabel nameLabel = new JLabel("Họ tên:");
         mainPanel.add(nameLabel, gbc);
@@ -48,6 +55,7 @@ public class TutorDetailForm extends JFrame {
         nameField.setEditable(false); // Không cho chỉnh sửa
         mainPanel.add(nameField, gbc);
 
+        // Tạo nhãn và trường nhập liệu cho username
         gbc.gridx = 0;
         gbc.gridy = 2;
         JLabel userNameLabel = new JLabel("User Name:");
@@ -55,10 +63,12 @@ public class TutorDetailForm extends JFrame {
 
         gbc.gridx = 1;
         userNameField = new JTextField(20);
-        userNameField.setText("N/A"); // Sẽ cập nhật sau khi lấy từ AdminService
+        String username = adminService.getUsernameByUserId(tutor.getUserId());
+        userNameField.setText(username != null ? username : "N/A");
         userNameField.setEditable(false);
         mainPanel.add(userNameField, gbc);
 
+        // Tạo nhãn và trường nhập liệu cho số điện thoại
         gbc.gridx = 0;
         gbc.gridy = 3;
         JLabel phoneLabel = new JLabel("Số điện thoại:");
@@ -70,6 +80,7 @@ public class TutorDetailForm extends JFrame {
         phoneField.setEditable(false);
         mainPanel.add(phoneField, gbc);
 
+        // Tạo nhãn và trường nhập liệu cho môn dạy
         gbc.gridx = 0;
         gbc.gridy = 4;
         JLabel subjectLabel = new JLabel("Môn dạy:");
@@ -77,13 +88,21 @@ public class TutorDetailForm extends JFrame {
 
         gbc.gridx = 1;
         subjectField = new JTextField(20);
-        subjectField.setText("N/A"); // Cần lấy từ SubjectTutor nếu có
+        // Lấy danh sách lịch học của gia sư từ bảng schedules dựa trên tutor_id
+        List<ScheduleRegister> schedules = adminService.getSchedulesByTutorId(tutor.getTutorId());
+        // Lấy danh sách môn học từ các lịch, loại bỏ trùng lặp
+        List<String> subjects = schedules.stream()
+                .map(ScheduleRegister::getSubject)
+                .distinct()
+                .collect(Collectors.toList());
+        subjectField.setText(subjects.isEmpty() ? "N/A" : String.join(", ", subjects));
         subjectField.setEditable(false);
         mainPanel.add(subjectField, gbc);
 
+        // Tạo nhãn và trường nhập liệu cho lương
         gbc.gridx = 0;
         gbc.gridy = 5;
-        JLabel salaryLabel = new JLabel("Lương / tháng:");
+        JLabel salaryLabel = new JLabel("Lương:");
         mainPanel.add(salaryLabel, gbc);
 
         gbc.gridx = 1;
@@ -92,7 +111,7 @@ public class TutorDetailForm extends JFrame {
         salaryField.setEditable(false);
         mainPanel.add(salaryField, gbc);
 
-        // Create the close button
+        // Tạo nút đóng
         gbc.gridx = 0;
         gbc.gridy = 6;
         gbc.gridwidth = 2;
@@ -100,11 +119,11 @@ public class TutorDetailForm extends JFrame {
         closeButton = new JButton("Đóng");
         mainPanel.add(closeButton, gbc);
 
-        // Set layout and add components
+        // Thiết lập layout và thêm các thành phần
         setLayout(new BorderLayout());
         add(mainPanel, BorderLayout.CENTER);
 
-        // Add action listener for the close button
+        // Thêm sự kiện cho nút đóng
         closeButton.addActionListener(e -> dispose());
     }
 }

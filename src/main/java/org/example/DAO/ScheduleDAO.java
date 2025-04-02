@@ -138,6 +138,8 @@ public class ScheduleDAO {
         return false;
     }
 
+
+
     // Helper method để ánh xạ ResultSet thành ScheduleRegister
     private ScheduleRegister mapResultSetToScheduleRegister(ResultSet resultSet) throws SQLException {
         ScheduleRegister schedule = new ScheduleRegister();
@@ -207,6 +209,36 @@ public class ScheduleDAO {
             }
         } catch (SQLException e) {
             throw new RuntimeException("Error fetching tutor schedules: " + e.getMessage(), e);
+        }
+        return schedules;
+    }
+    // Lấy danh sách lịch học của một gia sư cụ thể dựa trên tutor_id
+    public List<ScheduleRegister> getSchedulesByTutorId(int tutorId) {
+        List<ScheduleRegister> schedules = new ArrayList<>();
+        // Truy vấn lấy lịch học từ bảng schedule, kết hợp với bảng tutors để lấy thông tin gia sư
+        String query = "SELECT s.*, t.name AS tutor_name, t.phone_number, t.salary " +
+                "FROM schedule s JOIN tutors t ON s.tutor_id = t.tutor_id " +
+                "WHERE s.tutor_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, tutorId); // Gán giá trị tutor_id vào truy vấn
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    ScheduleRegister sr = new ScheduleRegister();
+                    sr.setScheduleId(rs.getInt("schedule_id"));
+                    sr.setTutorId(rs.getInt("tutor_id"));
+                    sr.setSubject(rs.getString("subject"));
+                    sr.setTimeStart(rs.getTime("time_start").toLocalTime());
+                    sr.setTimeEnd(rs.getTime("time_end").toLocalTime());
+                    sr.setDayStart(rs.getDate("day_start").toLocalDate());
+                    sr.setDayEnd(rs.getDate("day_end").toLocalDate());
+                    sr.setTutorName(rs.getString("tutor_name"));
+                    sr.setPhoneNumber(rs.getString("phone_number"));
+                    sr.setPrice(rs.getInt("salary"));
+                    schedules.add(sr);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error fetching schedules for tutor " + tutorId + ": " + e.getMessage(), e);
         }
         return schedules;
     }
